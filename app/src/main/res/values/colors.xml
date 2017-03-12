@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#233760</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="for_greeting_button">#f5d5a3</color>
+    <color name="for_stroke_greeting_button">#93a5e9</color>
+    <color name="primary_black">#000000</color>
+    <color name="for_stroke_greeting_pressed_button">#92ea6d</color>
+    <color name="shadowOfText">#891818</color>
+    <color name="score_and_timer">#22f1c7</color>
+    <color name="white_color">#ffffff</color>
+    <color name="disabled_button">#95966418</color>
+    <color name="for_stroke_disabled_button">#9593a5e9</color>
+</resources>

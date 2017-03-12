@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@drawable/greeting_font">
+
+    <TextView
+        android:id="@+id/result_after_game_textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:shadowColor="@color/shadowOfText"
+        android:shadowDy="5"
+        android:shadowDx="5"
+        android:shadowRadius="5"
+        android:textSize="35sp"/>
+
+    <Button
+        android:id="@+id/start_game_button"
+        style="@style/Styling_Button"
+        android:textColor="@color/primary_black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/start_game"
+        android:textStyle="bold"
+        android:shadowColor="@color/shadowOfText"
+        android:shadowDy="5"
+        android:shadowDx="5"
+        android:shadowRadius="5"
+        android:textSize="45sp"
+        android:lineSpacingExtra="5dp"/>
+
+    <Button
+        android:id="@+id/start_extra_game_button"
+        style="@style/Styling_Button"
+        android:textColor="@color/primary_black"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center_horizontal"
+        android:clickable="true"
+        android:text="@string/start_extra_game"
+        android:textStyle="bold"
+        android:shadowColor="@color/shadowOfText"
+        android:shadowDy="5"
+        android:shadowDx="5"
+        android:shadowRadius="5"
+        android:textSize="45sp"
+        android:lineSpacingExtra="5dp"
+        android:enabled="false"/>
+
+</LinearLayout>
