@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:id="@+id/linearLayout_id"
+              android:layout_width="match_parent"
+              android:layout_height="45dp">
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="45dp"
+        android:id="@+id/image_id"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:gravity="center"
+        android:layout_weight="1"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:id="@+id/season_id">
+    </TextView>
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="60dp"
+        android:layout_gravity="right"
+        android:paddingRight="5dp"
+        android:src="@mipmap/ic_choise_item"/>
+
+</LinearLayout>
