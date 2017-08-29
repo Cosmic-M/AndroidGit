@@ -61,6 +61,16 @@
             android:text="@string/points"/>
     </LinearLayout>
 
+    <ProgressBar
+        android:layout_gravity="center_vertical"
+        android:visibility="gone"
+        android:id="@+id/progressBar"
+        android:minHeight="20dip"
+        android:maxHeight="20dip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Inverse"/>
+
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -70,7 +70,7 @@
 
     <ProgressBar
         android:layout_gravity="center_vertical"
-        android:visibility="visible"
+        android:visibility="gone"
         android:id="@+id/progressBar"
         android:minHeight="20dip"
         android:maxHeight="20dip"
