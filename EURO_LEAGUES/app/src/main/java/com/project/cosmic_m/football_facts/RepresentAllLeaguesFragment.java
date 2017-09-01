@@ -142,13 +142,13 @@ public class RepresentAllLeaguesFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            LeagueStandingFragment lsf = new LeagueStandingFragment();
+            LeagueStandingFragment leagueStandingFragment = LeagueStandingFragment.newInstance();
             Bundle bundle = new Bundle();
             bundle.putInt("id", mLeague.getId());
             bundle.putString("leagueCaption", mLeague.getCaption());
-            lsf.setArguments(bundle);
+            leagueStandingFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.fragment_container,  lsf)
+            fragmentManager.beginTransaction().replace(R.id.fragment_container,  leagueStandingFragment, "leagueStandingFragmentTAG")
                     .addToBackStack("").commit();
         }
     }

@@ -1,5 +1,5 @@
 <resources>
-<string name="app_name">Football Statistics</string>
+<string name="app_name">LEAGUE</string>
 <string name="team_position">#</string>
 <string name="team_caption">Team</string>
 <string name="match_played">MP</string>

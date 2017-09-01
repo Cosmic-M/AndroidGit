@@ -49,22 +49,8 @@ public class FragmentActivity extends AppCompatActivity{
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode, resultCode, data);
-        try {
-            getSupportFragmentManager().getFragments().get(1)
-                    .onActivityResult(requestCode, resultCode, data);
-        }
-        catch(NullPointerException exc){
-            exc.printStackTrace();
-            try {
-                getSupportFragmentManager().getFragments().get(2)
-                        .onActivityResult(requestCode, resultCode, data);
-            }
-            catch (NullPointerException e){
-                e.printStackTrace();
-                getSupportFragmentManager().getFragments().get(0)
-                        .onActivityResult(requestCode, resultCode, data);
-            }
-        }
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag("leagueStandingFragmentTAG");
+        fragment.onActivityResult(requestCode, resultCode, data);
     }
 
     private void openQuitDialog(){

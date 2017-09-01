@@ -6,11 +6,9 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.*;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,14 +23,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 
 public class LeagueStandingFragment extends Fragment {
     private boolean flag;
-    private RecyclerView mPhotoRecyclerView;
+    private RecyclerView mRecyclerView;
     private List<TeamStanding.Standing> mItems = new ArrayList<>();
     private int mIdLeague;
     private String mLeagueCaption;
@@ -48,6 +45,10 @@ public class LeagueStandingFragment extends Fragment {
     public final static String LEAGUE_CAPTION = "leagueCaption";
     public final static String LEAGUE_ID = "leagueId";
     public final static String PARAM_PEN_INTENT = "pendingIntent";
+
+    public static LeagueStandingFragment newInstance(){
+        return new LeagueStandingFragment();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,9 +138,9 @@ public class LeagueStandingFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_standing_teams, container, false);
-        mPhotoRecyclerView = (RecyclerView) view
+        mRecyclerView = (RecyclerView) view
                 .findViewById(R.id.fragment_standing_teams_id);
-        mPhotoRecyclerView.setLayoutManager(
+        mRecyclerView.setLayoutManager(
                 new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         setupAdapter();
@@ -166,7 +167,7 @@ public class LeagueStandingFragment extends Fragment {
 
     private void setupAdapter() {
         if (this.isAdded()) {
-            mPhotoRecyclerView.setAdapter(new TeamAdapter(mItems));
+            mRecyclerView.setAdapter(new TeamAdapter(mItems));
         }
     }
 
@@ -258,15 +259,14 @@ public class LeagueStandingFragment extends Fragment {
 
         @Override
         public void onClick(View view){
-
-            ListAllMatchesOfTeamFragment lamf = new ListAllMatchesOfTeamFragment();
+            ListAllMatchesOfTeamFragment listAllMatchesOfTeamFragment = ListAllMatchesOfTeamFragment.newInstance();
             Bundle bundle = new Bundle();
             bundle.putString("team_id", mTeamId);
             bundle.putString("league_id", String.valueOf(mIdLeague));
             bundle.putString("leagueCaption", mLeagueCaption);
-            lamf.setArguments(bundle);
+            listAllMatchesOfTeamFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.fragment_container,  lamf)
+            fragmentManager.beginTransaction().replace(R.id.fragment_container,  listAllMatchesOfTeamFragment)
                     .addToBackStack("").commit();
         }
     }

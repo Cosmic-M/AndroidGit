@@ -18,7 +18,6 @@ import android.widget.Toast;
 import org.json.JSONException;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,14 +30,12 @@ import java.util.TimeZone;
  */
 
 public class LastConfrontationsFragment extends Fragment {
-
-    private static final String TAG = "HistoryOfConfrontations";
     private SingletonLeague mSingletonLeague;
     private RecyclerView mRecyclerView;
     private String mConfrontationId;
     private List<Event> mItems = new ArrayList<>();
 
-    public static Fragment newInstance(){
+    public static LastConfrontationsFragment newInstance(){
         return new LastConfrontationsFragment();
     }
 
@@ -107,7 +104,6 @@ public class LastConfrontationsFragment extends Fragment {
             String dateOfMatch = "";
             try {
                 result = df.parse(event.getMatchDate());
-                Log.i(TAG, "result = df.parse(event.getMatchDate())");
                 SimpleDateFormat sdfForDate = new SimpleDateFormat("dd MMMM, yyyy");
                 SimpleDateFormat sdfForTime = new SimpleDateFormat("HH:mm");
                 sdfForDate.setTimeZone(TimeZone.getTimeZone("GMT"));
@@ -115,7 +111,6 @@ public class LastConfrontationsFragment extends Fragment {
                 dateOfMatch = sdfForDate.format(result);
             }
             catch(java.text.ParseException e){
-                Log.i(TAG, e.getMessage());
                 e.printStackTrace();
             }
             mDateOfMatch.setText(dateOfMatch);

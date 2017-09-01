@@ -146,7 +146,7 @@ public class TaskService extends Service {
                 }
             }
             if (downloadedEmblem != index){//if clause is false - it's means we already downloaded all needed emblems
-                    Map<String, Drawable> result = SingletonLeague.getSingleton(getApplicationContext())
+                Map<String, Drawable> result = SingletonLeague.getSingleton(getApplicationContext())
                         .getEmblemDrawableMap();
                 Future<Map<String, Drawable>> f1;
                 Future<Map<String, Drawable>> f2;

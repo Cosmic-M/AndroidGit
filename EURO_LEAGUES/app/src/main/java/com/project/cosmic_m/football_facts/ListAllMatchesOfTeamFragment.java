@@ -8,7 +8,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +39,10 @@ public class ListAllMatchesOfTeamFragment extends Fragment {
     private String mIdLeague;
     private RecyclerView mRecyclerView;
     private List<Event> mItems = new ArrayList<>();
+
+    public static ListAllMatchesOfTeamFragment newInstance(){
+        return new ListAllMatchesOfTeamFragment();
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -76,9 +79,7 @@ public class ListAllMatchesOfTeamFragment extends Fragment {
                 return dateForEvent1.compareTo(dateForEvent2);
             }
         });
-
         setupAdapter();
-
         return view;
     }
 
@@ -160,14 +161,11 @@ public class ListAllMatchesOfTeamFragment extends Fragment {
 
         @Override
         public void onClick(View view){
-
             if (!isNetworkAvailableAndConnected()){
                 Toast.makeText(getActivity(), "WITHOUT CONNECTION TO NETWORK", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            LastConfrontationsFragment lc = (LastConfrontationsFragment)
-                    LastConfrontationsFragment.newInstance();
+            LastConfrontationsFragment lastConfrontationsFragment = LastConfrontationsFragment.newInstance();
             Bundle bundle = new Bundle();
             bundle.putString("confrontationId", mMatch_id);
             String homeTeamName = mHomeTeam.getText().toString();
@@ -175,9 +173,9 @@ public class ListAllMatchesOfTeamFragment extends Fragment {
             SingletonLeague singletonLeague = SingletonLeague.getSingleton(getActivity());
             singletonLeague.setTeamDrawable(homeTeamName, mImageHomeTeam.getDrawable());
             singletonLeague.setTeamDrawable(awayTeamName, mImageAwayTeam.getDrawable());
-            lc.setArguments(bundle);
+            lastConfrontationsFragment.setArguments(bundle);
             FragmentManager fragmentManager = getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.fragment_container,  lc)
+            fragmentManager.beginTransaction().replace(R.id.fragment_container,  lastConfrontationsFragment)
                     .addToBackStack("").commit();
         }
     }
