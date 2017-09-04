@@ -1,0 +1,14 @@
+<resources>
+<string name="app_name">FOOTBALL FANATIC</string>
+<string name="team_position">#</string>
+<string name="team_caption">Team</string>
+<string name="match_played">MP</string>
+<string name="match_win">W</string>
+<string name="match_draw">D</string>
+<string name="match_loss">L</string>
+<string name="gf_ga">GF-GA</string>
+<string name="points">PTS</string>
+<string name="quit">ARE YOU SURE?</string>
+<string name="yes">YES</string>
+<string name="no">NO</string>
+</resources>
