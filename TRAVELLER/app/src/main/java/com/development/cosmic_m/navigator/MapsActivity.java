@@ -1,0 +1,346 @@
+package com.development.cosmic_m.navigator;
+
+import android.Manifest;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.development.cosmic_m.navigator.Modules.DirectionFinder;
+import com.development.cosmic_m.navigator.Modules.DirectionFinderListener;
+import com.development.cosmic_m.navigator.Modules.MemoryPlace;
+import com.development.cosmic_m.navigator.Modules.Route;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.android.gms.maps.GoogleMap.*;
+
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, OnMarkerClickListener {
+
+    private static final String TAG = "TAG";
+    private static final int REQUEST_NEW_POINT = 250;
+    private GoogleMap mMap;
+    private EditText mOrigin;
+    private EditText mDestination;
+    private Button mFindPath;
+    private Button mShowAllPlaces;
+    private List<Marker> originMarkers = new ArrayList<>();
+    private List<Marker> destinationMarkers = new ArrayList<>();
+    private List<Polyline> polylinePaths = new ArrayList<>();
+    private ProgressDialog progressDialog;
+    private LatLng myLocation;
+    private LocationManager locationManager;
+    private ImageView mImage;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.i(TAG, "onCreate called");
+        setContentView(R.layout.activity_maps);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        mFindPath = (Button) findViewById(R.id.btnFindPath);
+        mShowAllPlaces = (Button) findViewById(R.id.showAllPlaces);
+        mOrigin = (EditText) findViewById(R.id.etOrigin);
+        mDestination = (EditText) findViewById(R.id.etDestination);
+        mImage = (ImageView) findViewById(R.id.image_id);
+        mFindPath.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "find path...");
+                sendRequest();
+            }
+        });
+        mShowAllPlaces.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Log.i(TAG, "showing all places...");
+                updateCamera();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.i(TAG, "onResume called");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "GPS_PROVIDER and NETWORK_PROVIDER not be called");
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10 * 1000, 10, mLocationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10*1000, 10, mLocationListener);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        Log.i(TAG, "onCreateOptionsMenu called");
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem){
+        Intent intent;
+        switch(menuItem.getItemId()){
+            case R.id.clear_all_appointed_points_item:
+                Log.i(TAG, "you select: CLEAR");
+                Toast.makeText(this, "CLEAR", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.build_route_item:
+                Log.i(TAG, "you select: BUILD ROUTE");
+                Toast.makeText(this, "BUILD ROUTE", Toast.LENGTH_SHORT).show();
+                return true;
+            case R.id.preview_points_item:
+                Log.i(TAG, "you select: PREVIEW");
+                Toast.makeText(this, "PREVIEW", Toast.LENGTH_SHORT).show();
+                intent = PlacePagerActivity.newIntent(this);
+                startActivity(intent);
+                return true;
+            case R.id.new_point_item:
+                Log.i(TAG, "you select: NEW POINT");
+                Toast.makeText(this, "NEW POINT", Toast.LENGTH_SHORT).show();
+                if (myLocation != null) {
+                    intent = AddPointActivity.newIntent(this);
+                    intent.putExtra("latitude", myLocation.latitude);
+                    intent.putExtra("longitude", myLocation.longitude);
+                    startActivityForResult(intent, REQUEST_NEW_POINT);
+                }
+                else{
+                    Toast.makeText(this, "try later, current location is't detected", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data){
+        if (resultCode != Activity.RESULT_OK){
+            return;
+        }
+        if (requestCode == REQUEST_NEW_POINT){
+            updateCamera();
+        }
+    }
+
+    private LocationListener mLocationListener = new LocationListener() {
+        @Override
+        public void onLocationChanged(Location location) {
+            Log.i(TAG, "LocationListener/onLocationChanged called");
+            myLocation = new LatLng(location.getLatitude(), location.getLongitude());
+            Toast.makeText(MapsActivity.this, "YOUR LOCATION IS APPOINTED", Toast.LENGTH_SHORT).show();
+            updateCamera();
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+
+        }
+    };
+
+    private void sendRequest(){
+        String origin = mOrigin.getText().toString();
+        String destination = mDestination.getText().toString();
+        Log.i(TAG, "after initialize string's points");
+        if (origin.isEmpty()){
+            Toast.makeText(this, "Enter the origin of route", Toast.LENGTH_SHORT).show();
+        }
+        if (destination.isEmpty()){
+            Toast.makeText(this, "Enter destination point", Toast.LENGTH_SHORT).show();
+        }
+        try{
+            try {
+                new DirectionFinder(this, origin, destination).execute();
+            } catch (UnsupportedEncodingException e) {
+                Log.i(TAG, e.getMessage());
+                e.printStackTrace();
+            }
+        }
+        catch (UnsupportedOperationException exc){
+            Log.i(TAG, exc.getMessage());
+            exc.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.i(TAG, "onMapReady called");
+        mMap = googleMap;
+        mMap.setOnMarkerClickListener(this);
+        updateCamera();
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker){
+        if (marker.getTitle().equals("HUE_AZURE")){
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            marker.setTitle("HUE_RED" + marker.getTag());
+
+            mImage.setVisibility(View.INVISIBLE);
+        }
+        else {
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+            marker.setTitle("HUE_AZURE");
+            int tag = 0;
+            if  (marker != null) {
+                tag = (int) marker.getTag();
+            }
+            MemoryPlace mp = PlaceLab.get(this).getMemoryPlacesList().get(tag);
+            File file = PlaceLab.get(this).getPhotoFile(mp);
+            Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
+            mImage.setImageBitmap(bitmap);
+            mImage.setVisibility(View.VISIBLE);
+        }
+        Integer clickCount = (Integer) marker.getTag();
+        if (clickCount != null){
+            Toast.makeText(this, "title - " + marker.getTitle().toString() + " MARKER #" + clickCount, Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    private void updateCamera(){
+        Log.i(TAG, "updateCamera called");
+        if (mMap == null) return;
+        originMarkers.clear();
+        List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlacesList();
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        Log.i(TAG, "list.size() = " + list.size());
+        for (int i = 0; i < list.size(); i++) {
+            bounds.include(list.get(i).getLatLng());
+            originMarkers.add(mMap.addMarker(new MarkerOptions().title("HUE_RED")
+                    .position(list.get(i).getLatLng())));
+            originMarkers.get(i).setTag(i);
+        }
+        if (myLocation != null) {
+//            originMarkers.add(mMap.addMarker(new MarkerOptions().title("my location right now")
+//                    .position(myLocation)));
+            bounds.include(myLocation);
+        }
+        int margin = getResources().getDimensionPixelSize(R.dimen.map_insert_margin);
+        final CameraUpdate update = CameraUpdateFactory.newLatLngBounds(bounds.build(), margin);
+        Log.i(TAG, "bounds = " + bounds.toString());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager
+                .PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission
+                .ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "something wrong...");
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
+
+        final LatLngBounds.Builder finalBounds = bounds;
+        mMap.setOnMapLoadedCallback(new OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                Log.i(TAG, "onMapLoaded/bounds = " + finalBounds.toString());
+                mMap.animateCamera(update);
+                //Your code where exception occurs goes here...
+            }
+        });
+
+    }
+
+    @Override
+    public void onDirectionFinderStart() {
+        progressDialog = ProgressDialog.show(this, "Please wait.",
+                "Finding direction..!", true);
+        if (originMarkers != null) {
+            for (Marker marker : originMarkers) {
+                marker.remove();
+            }
+        }
+        if (destinationMarkers != null) {
+            for (Marker marker : destinationMarkers) {
+                marker.remove();
+            }
+        }
+        if (polylinePaths != null) {
+            for (Polyline polyline : polylinePaths ) {
+                polyline.remove();
+            }
+        }
+    }
+
+    @Override
+    public void onDirectionFinderSuccess(List<Route> routes) {
+        progressDialog.dismiss();
+        polylinePaths = new ArrayList<>();
+        originMarkers = new ArrayList<>();
+        destinationMarkers = new ArrayList<>();
+        for (Route route : routes) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
+            ((TextView) findViewById(R.id.tvClock)).setText(route.duration.text);
+            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_icon))
+                    .title(route.startAddress)
+                    .position(route.startLocation)));
+            destinationMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.finish_icon))
+                    .title(route.endAddress)
+                    .position(route.endLocation)));
+            PolylineOptions polylineOptions = new PolylineOptions().
+                    geodesic(true).
+                    color(Color.BLUE).
+                    width(10);
+            for (int i = 0; i < route.points.size(); i++)
+                polylineOptions.add(route.points.get(i));
+            polylinePaths.add(mMap.addPolyline(polylineOptions));
+        }
+    }
+}
