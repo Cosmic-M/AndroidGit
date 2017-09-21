@@ -64,7 +64,13 @@ public class PlaceLab {
         list.add(mp);
 
         mp = new MemoryPlace(new LatLng(49.851276,36.822684));
-        mp.setTextDescription("desert nearside the highway to Pechenegy lake");
+        mp.setTextDescription(
+                "Кицевская пустыня ‒ очень необычное и живописное место. Когда-то в этих местах " +
+                "проводились танковые учения, о чем свидетельствуют не редкие находки танковых " +
+                "снарядов. Ну а сейчас, в этом безмолвном песчаном царстве наслаждаешься тишиной " +
+                "и отсутствием привычной городской суеты. А еще здесь получаются замечательные " +
+                "фотографии!"
+                );
         saveImageToFileSystem(context, mp, R.raw.dessert_in_kicevka);
         list.add(mp);
 
