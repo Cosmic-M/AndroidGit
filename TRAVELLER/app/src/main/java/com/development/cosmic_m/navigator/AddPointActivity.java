@@ -9,6 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -36,6 +38,8 @@ public class AddPointActivity extends AppCompatActivity{
     private ImageButton mPhoto;
     private EditText mNotationText;
     private File mPhotoFile;
+    private String et;
+    private MemoryPlace mp;
 
 
     public static Intent newIntent(Context context){
@@ -59,7 +63,7 @@ public class AddPointActivity extends AppCompatActivity{
                 .getDoubleExtra("latitude", 0) + 0.3, getIntent().getDoubleExtra("longitude", 0) + 0.3);
 
         PackageManager packageManager = getApplicationContext().getPackageManager();
-        MemoryPlace mp = new MemoryPlace(myLatLng);
+        mp = new MemoryPlace(myLatLng);
         //PlaceLab.get(getApplicationContext()).addMemoryPlace(mp);
 
         mPhotoFile = PlaceLab.get(getApplicationContext()).getPhotoFile(mp);
@@ -68,7 +72,7 @@ public class AddPointActivity extends AppCompatActivity{
 
         boolean canTakePhoto = mPhotoFile != null && cameraIntent.resolveActivity(packageManager) != null;
         mPhoto.setEnabled(canTakePhoto);
-        PlaceLab.get(getApplicationContext()).addMemoryPlace(mp);
+        //PlaceLab.get(getApplicationContext()).insertPlaceIntoDB(mp);
         if (canTakePhoto){
             Uri uri = Uri.fromFile(mPhotoFile);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
@@ -86,9 +90,29 @@ public class AddPointActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "activity finish");
+                mp.setTextDescription(et);
+                PlaceLab.get(getApplicationContext()).insertPlaceIntoDB(mp);
                 finish();
             }
         });
+
+        mNotationText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                et = s.toString();
+            }
+        });
+
         updatePhotoView();
     }
 

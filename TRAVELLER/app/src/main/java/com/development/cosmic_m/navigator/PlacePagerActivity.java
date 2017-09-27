@@ -32,7 +32,7 @@ public class PlacePagerActivity extends FragmentActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_place_pager);
         mViewPager = (ViewPager) findViewById(R.id.activity_place_pager_view_pager);
-        mPlaceList = PlaceLab.get(this).getMemoryPlacesList();
+        mPlaceList = PlaceLab.get(this).getMemoryPlace();
         Log.i(TAG, "PlacePagerActivity/list.size() = " + mPlaceList.size());
         FragmentManager fragmentManager = getSupportFragmentManager();
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {

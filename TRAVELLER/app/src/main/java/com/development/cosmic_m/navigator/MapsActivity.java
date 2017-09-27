@@ -51,7 +51,7 @@ import static com.google.android.gms.maps.GoogleMap.*;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, OnMarkerClickListener {
 
-    private static final String TAG = "TAG";
+    private static final String TAG = "MapsActivity";
     private static final int REQUEST_NEW_POINT = 250;
     private GoogleMap mMap;
     private EditText mOrigin;
@@ -125,6 +125,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem){
+        Log.i(TAG, "onOptionsItemSelected called");
         Intent intent;
         switch(menuItem.getItemId()){
             case R.id.clear_all_appointed_points_item:
@@ -228,42 +229,57 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(final Marker marker){
-        if (marker.getTitle().equals("HUE_AZURE")){
+        if ((int) marker.getTag() > 99){
+            Log.i(TAG, "IF ... TRUE");
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-            marker.setTitle("HUE_RED" + marker.getTag());
-
+            marker.setTag((int) marker.getTag() - 100);
+            Log.i(TAG, "marker.getTag() = "+ marker.getTag());
+            Log.i(TAG, "marker.geId() = " + marker.getId());
             mImage.setVisibility(View.INVISIBLE);
+            Log.i(TAG, "IMAGE INVISIBLE");
         }
         else {
+            Log.i(TAG, "<<ELSE>>");
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-            marker.setTitle("HUE_AZURE");
-            int tag = 0;
+            Log.i(TAG, "marker.geId() = " + marker.getId());
+            int tag;
             if  (marker != null) {
+                Log.i(TAG, "marker != null -> true");
                 tag = (int) marker.getTag();
+                Log.i(TAG, "marker.getTag() = " + tag);
+                MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
+                File file = PlaceLab.get(this).getPhotoFile(mp);
+                Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
+                mImage.setImageBitmap(bitmap);
+                mImage.setVisibility(View.VISIBLE);
+                Log.i(TAG, "IMAGE VISIBLE");
+                marker.setTag((int) marker.getTag() + 100);
             }
-            MemoryPlace mp = PlaceLab.get(this).getMemoryPlacesList().get(tag);
-            File file = PlaceLab.get(this).getPhotoFile(mp);
-            Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
-            mImage.setImageBitmap(bitmap);
-            mImage.setVisibility(View.VISIBLE);
+            else {
+                Log.i(TAG, "marker == null -> true");
+            }
         }
         Integer clickCount = (Integer) marker.getTag();
+        Log.i(TAG, "originMarkers.size() = " + originMarkers.size());
         if (clickCount != null){
             Toast.makeText(this, "title - " + marker.getTitle().toString() + " MARKER #" + clickCount, Toast.LENGTH_SHORT).show();
         }
-        return true;
+        return false;
     }
 
     private void updateCamera(){
         Log.i(TAG, "updateCamera called");
         if (mMap == null) return;
-        originMarkers.clear();
-        List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlacesList();
-        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
+        //originMarkers.clear();
+        Log.i(TAG, "originMarkers.size() = " + originMarkers.size() + " / must be 0");
+        //List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlacesList();
+        List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlace();
         Log.i(TAG, "list.size() = " + list.size());
+        LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for (int i = 0; i < list.size(); i++) {
             bounds.include(list.get(i).getLatLng());
-            originMarkers.add(mMap.addMarker(new MarkerOptions().title("HUE_RED")
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .title("HUE_RED")
                     .position(list.get(i).getLatLng())));
             originMarkers.get(i).setTag(i);
         }

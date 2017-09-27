@@ -50,6 +50,7 @@ public class JustifiedTextView extends View {
 
         Log.i(TAG, "b1 = " + b1 + ", fh = " + fh);
 
+        if (mText == null) return;
         StringTokenizer stringTokenizer = new StringTokenizer(mText);
         while (stringTokenizer.hasMoreTokens()){
             word = stringTokenizer.nextToken();
