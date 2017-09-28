@@ -11,9 +11,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +20,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -56,6 +55,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     private EditText mOrigin;
     private EditText mDestination;
+
+    private LatLng mDestinationPoint;
+    private Marker mDestinationMarker;
+    private List<LatLng> mTransitionPoints = new ArrayList<>();
+    private RelativeLayout mContainerMini;
     private Button mFindPath;
     private Button mShowAllPlaces;
     private List<Marker> originMarkers = new ArrayList<>();
@@ -65,6 +69,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng myLocation;
     private LocationManager locationManager;
     private ImageView mImage;
+    private Button mTargetBtn;
+    private Button mTransitBtn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,17 +82,26 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapFragment.getMapAsync(this);
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
         mFindPath = (Button) findViewById(R.id.btnFindPath);
         mShowAllPlaces = (Button) findViewById(R.id.showAllPlaces);
-        mOrigin = (EditText) findViewById(R.id.etOrigin);
-        mDestination = (EditText) findViewById(R.id.etDestination);
+        mContainerMini = (RelativeLayout) findViewById(R.id.container_for_mini_id);
         mImage = (ImageView) findViewById(R.id.image_id);
+        mTargetBtn = (Button) findViewById(R.id.btn_target);
+        mTransitBtn = (Button) findViewById(R.id.btn_transit);
+        mTargetBtn.setBackgroundResource(R.drawable.finish_flag);
+        mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+        mContainerMini.setVisibility(View.INVISIBLE);
+
         mFindPath.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "find path...");
-                sendRequest();
+                if (myLocation == null && mDestinationPoint == null){
+                    Toast.makeText(MapsActivity.this, "Destination Or Current Location Is Absent!", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    sendRequest();
+                }
             }
         });
         mShowAllPlaces.setOnClickListener(new View.OnClickListener() {
@@ -196,8 +211,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     private void sendRequest(){
-        String origin = mOrigin.getText().toString();
-        String destination = mDestination.getText().toString();
+        //String origin = mOrigin.getText().toString();
+        String origin = myLocation.toString();
+        //String destination = mDestination.getText().toString();
+        String destination = mDestinationPoint.toString();
         Log.i(TAG, "after initialize string's points");
         if (origin.isEmpty()){
             Toast.makeText(this, "Enter the origin of route", Toast.LENGTH_SHORT).show();
@@ -229,72 +246,94 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public boolean onMarkerClick(final Marker marker){
-        if ((int) marker.getTag() > 99){
-            Log.i(TAG, "IF ... TRUE");
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-            marker.setTag((int) marker.getTag() - 100);
-            Log.i(TAG, "marker.getTag() = "+ marker.getTag());
-            Log.i(TAG, "marker.geId() = " + marker.getId());
-            mImage.setVisibility(View.INVISIBLE);
-            Log.i(TAG, "IMAGE INVISIBLE");
+        int tag;
+        if  (marker != null) {
+            tag = (int) marker.getTag();
+            final MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
+            File file = PlaceLab.get(this).getPhotoFile(mp);
+            Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
+            mImage.setImageBitmap(bitmap);
+            if(mTransitionPoints.contains(mp.getLatLng())){
+                mTransitBtn.setBackgroundResource(R.drawable.cancel_transition_flag);
+            }
+            else{
+                mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+            }
+            mContainerMini.setVisibility(View.VISIBLE);
+
+            mTargetBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mTransitionPoints.remove(mp.getLatLng());
+                    if (!mp.getLatLng().equals(mDestinationPoint)) {
+                        if (mDestinationMarker != null) {
+                            mDestinationMarker.setIcon(BitmapDescriptorFactory
+                                    .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        }
+                    }
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    mDestinationPoint = mp.getLatLng();
+                    mDestinationMarker = marker;
+                    mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+                }
+            });
+
+            mTransitBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!mTransitionPoints.contains(mp.getLatLng())) {
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+                        mTransitBtn.setBackgroundResource(R.drawable.cancel_transition_flag);
+                        mTransitionPoints.add(mp.getLatLng());
+                        if (mp.getLatLng().equals(mDestinationPoint)) {
+                            mDestinationPoint = null;
+                            mDestinationMarker = null;
+                        }
+                    }
+                    else{
+                        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                        mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+                        mTransitionPoints.remove(mp.getLatLng());
+                    }
+                }
+            });
         }
         else {
-            Log.i(TAG, "<<ELSE>>");
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-            Log.i(TAG, "marker.geId() = " + marker.getId());
-            int tag;
-            if  (marker != null) {
-                Log.i(TAG, "marker != null -> true");
-                tag = (int) marker.getTag();
-                Log.i(TAG, "marker.getTag() = " + tag);
-                MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
-                File file = PlaceLab.get(this).getPhotoFile(mp);
-                Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
-                mImage.setImageBitmap(bitmap);
-                mImage.setVisibility(View.VISIBLE);
-                Log.i(TAG, "IMAGE VISIBLE");
-                marker.setTag((int) marker.getTag() + 100);
-            }
-            else {
-                Log.i(TAG, "marker == null -> true");
-            }
-        }
-        Integer clickCount = (Integer) marker.getTag();
-        Log.i(TAG, "originMarkers.size() = " + originMarkers.size());
-        if (clickCount != null){
-            Toast.makeText(this, "title - " + marker.getTitle().toString() + " MARKER #" + clickCount, Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "marker == null -> true");
         }
         return false;
     }
 
     private void updateCamera(){
-        Log.i(TAG, "updateCamera called");
         if (mMap == null) return;
-        //originMarkers.clear();
-        Log.i(TAG, "originMarkers.size() = " + originMarkers.size() + " / must be 0");
-        //List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlacesList();
+        originMarkers.clear();
+        mMap.clear();
         List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlace();
-        Log.i(TAG, "list.size() = " + list.size());
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for (int i = 0; i < list.size(); i++) {
             bounds.include(list.get(i).getLatLng());
+
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .title("HUE_RED")
                     .position(list.get(i).getLatLng())));
             originMarkers.get(i).setTag(i);
+            if (list.get(i).getLatLng().equals(mDestinationPoint)) {
+                Marker marker = originMarkers.get(i);
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            }
+            if (mTransitionPoints.contains(list.get(i).getLatLng())){
+                Marker marker = originMarkers.get(i);
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+            }
         }
         if (myLocation != null) {
-//            originMarkers.add(mMap.addMarker(new MarkerOptions().title("my location right now")
-//                    .position(myLocation)));
             bounds.include(myLocation);
         }
         int margin = getResources().getDimensionPixelSize(R.dimen.map_insert_margin);
         final CameraUpdate update = CameraUpdateFactory.newLatLngBounds(bounds.build(), margin);
-        Log.i(TAG, "bounds = " + bounds.toString());
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager
                 .PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission
                 .ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "something wrong...");
             return;
         }
         mMap.setMyLocationEnabled(true);
@@ -308,7 +347,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //Your code where exception occurs goes here...
             }
         });
-
     }
 
     @Override
