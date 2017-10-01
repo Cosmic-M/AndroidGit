@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -69,14 +70,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng myLocation;
     private LocationManager locationManager;
     private ImageView mImage;
-    private Button mTargetBtn;
-    private Button mTransitBtn;
+    private ImageView mHidePicture;
+    private ImageView mTargetBtn;
+    private ImageView mTransitBtn;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.i(TAG, "onCreate called");
-        setContentView(R.layout.activity_maps);
+        setContentView(R.layout.activity_main);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -86,10 +88,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mShowAllPlaces = (Button) findViewById(R.id.showAllPlaces);
         mContainerMini = (RelativeLayout) findViewById(R.id.container_for_mini_id);
         mImage = (ImageView) findViewById(R.id.image_id);
-        mTargetBtn = (Button) findViewById(R.id.btn_target);
-        mTransitBtn = (Button) findViewById(R.id.btn_transit);
-        mTargetBtn.setBackgroundResource(R.drawable.finish_flag);
-        mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+        mTargetBtn = (ImageView) findViewById(R.id.btn_target);
+        mTransitBtn = (ImageView) findViewById(R.id.btn_transit);
+        mHidePicture = (ImageView) findViewById(R.id.btn_remove_picture);
+        mTargetBtn.setBackgroundResource(R.mipmap.finish_flag);
+        mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
         mContainerMini.setVisibility(View.INVISIBLE);
 
         mFindPath.setOnClickListener(new View.OnClickListener() {
@@ -146,10 +149,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.clear_all_appointed_points_item:
                 Log.i(TAG, "you select: CLEAR");
                 Toast.makeText(this, "CLEAR", Toast.LENGTH_SHORT).show();
-                return true;
-            case R.id.build_route_item:
-                Log.i(TAG, "you select: BUILD ROUTE");
-                Toast.makeText(this, "BUILD ROUTE", Toast.LENGTH_SHORT).show();
                 return true;
             case R.id.preview_points_item:
                 Log.i(TAG, "you select: PREVIEW");
@@ -211,10 +210,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     };
 
     private void sendRequest(){
-        //String origin = mOrigin.getText().toString();
-        String origin = myLocation.toString();
-        //String destination = mDestination.getText().toString();
-        String destination = mDestinationPoint.toString();
+        String origin = String.valueOf(myLocation.latitude) + ", " + String.valueOf(myLocation.longitude);
+        Log.i(TAG, "origin = " + origin);
+        String destination = String.valueOf(mDestinationPoint.latitude) + ", " + String.valueOf(mDestinationPoint.longitude);
+        Log.i(TAG, "destination = " + destination);
         Log.i(TAG, "after initialize string's points");
         if (origin.isEmpty()){
             Toast.makeText(this, "Enter the origin of route", Toast.LENGTH_SHORT).show();
@@ -224,7 +223,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         try{
             try {
-                new DirectionFinder(this, origin, destination).execute();
+                new DirectionFinder(this, origin, destination, convertLatLngListToStringList(mTransitionPoints)).execute();
             } catch (UnsupportedEncodingException e) {
                 Log.i(TAG, e.getMessage());
                 e.printStackTrace();
@@ -234,6 +233,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.i(TAG, exc.getMessage());
             exc.printStackTrace();
         }
+    }
+
+    private static List<String> convertLatLngListToStringList(List<LatLng> latLngsList){
+        List<String> list = new ArrayList<>();
+        for (LatLng latLng : latLngsList){
+            list.add(String.valueOf(latLng.latitude) + "," + String.valueOf(latLng.longitude));
+        }
+        return list;
     }
 
     @Override
@@ -254,12 +261,18 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
             mImage.setImageBitmap(bitmap);
             if(mTransitionPoints.contains(mp.getLatLng())){
-                mTransitBtn.setBackgroundResource(R.drawable.cancel_transition_flag);
+                mTransitBtn.setBackgroundResource(R.mipmap.transit_cancel);
             }
             else{
-                mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+                mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
             }
             mContainerMini.setVisibility(View.VISIBLE);
+
+            mHidePicture.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View v){
+                    mContainerMini.setVisibility(View.INVISIBLE);
+                }
+            });
 
             mTargetBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -274,7 +287,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     mDestinationPoint = mp.getLatLng();
                     mDestinationMarker = marker;
-                    mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+                    mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
                 }
             });
 
@@ -283,7 +296,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 public void onClick(View v) {
                     if (!mTransitionPoints.contains(mp.getLatLng())) {
                         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                        mTransitBtn.setBackgroundResource(R.drawable.cancel_transition_flag);
+                        mTransitBtn.setBackgroundResource(R.mipmap.transit_cancel);
                         mTransitionPoints.add(mp.getLatLng());
                         if (mp.getLatLng().equals(mDestinationPoint)) {
                             mDestinationPoint = null;
@@ -292,7 +305,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                     else{
                         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                        mTransitBtn.setBackgroundResource(R.drawable.transition_flag);
+                        mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
                         mTransitionPoints.remove(mp.getLatLng());
                     }
                 }
@@ -378,7 +391,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         destinationMarkers = new ArrayList<>();
         for (Route route : routes) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
-            ((TextView) findViewById(R.id.tvClock)).setText(route.duration.text);
+            //((TextView) findViewById(R.id.tvClock)).setText(route.duration.text);
             ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_icon))

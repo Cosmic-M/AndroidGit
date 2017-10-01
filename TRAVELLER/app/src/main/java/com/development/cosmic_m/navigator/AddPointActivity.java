@@ -16,12 +16,14 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.development.cosmic_m.navigator.Modules.MemoryPlace;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.File;
+import java.util.Formatter;
 
 /**
  * Created by Cosmic_M on 15.09.2017.
@@ -34,8 +36,9 @@ public class AddPointActivity extends AppCompatActivity{
 
     private TextView mLatitude;
     private TextView mLongitude;
+    private ImageButton mCameraButton;
     private Button mAddPoint;
-    private ImageButton mPhoto;
+    private ImageView mPhoto;
     private EditText mNotationText;
     private File mPhotoFile;
     private String et;
@@ -53,11 +56,17 @@ public class AddPointActivity extends AppCompatActivity{
         mLatitude = (TextView) findViewById(R.id.tvLatitude);
         mLongitude = (TextView) findViewById(R.id.tvLongitude);
         mAddPoint = (Button) findViewById(R.id.btn_add_point);
-        mPhoto = (ImageButton) findViewById(R.id.camera_image_id);
+        mPhoto = (ImageView) findViewById(R.id.image_id);
         mNotationText = (EditText) findViewById(R.id.et_notations);
-
-        mLatitude.setText(String.valueOf(getIntent().getDoubleExtra("latitude", 0)));
-        mLongitude.setText(String.valueOf(getIntent().getDoubleExtra("longitude", 0)));
+        mCameraButton = (ImageButton) findViewById(R.id.camera_id);
+        Formatter formatter = new Formatter();
+        formatter.format("%.6f", getIntent().getDoubleExtra("latitude", 0));
+        mLatitude.setText(formatter.toString());
+        formatter.close();
+        formatter = new Formatter();
+        formatter.format("%.6f", getIntent().getDoubleExtra("longitude", 0));
+        mLongitude.setText(formatter.toString());
+        formatter.close();
 
         LatLng myLatLng = new LatLng(getIntent()
                 .getDoubleExtra("latitude", 0) + 0.3, getIntent().getDoubleExtra("longitude", 0) + 0.3);
@@ -78,7 +87,7 @@ public class AddPointActivity extends AppCompatActivity{
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
         }
 
-        mPhoto.setOnClickListener(new View.OnClickListener() {
+        mCameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "startActivityForResult");
@@ -118,11 +127,14 @@ public class AddPointActivity extends AppCompatActivity{
 
     private void updatePhotoView(){
         if (mPhotoFile == null || !mPhotoFile.exists()){
-            mPhoto.setImageResource(R.mipmap.ic_camera_icon);
+            //mPhoto.setImageResource(R.mipmap.ic_camera_icon);
         }
         else{
+            mPhoto.setVisibility(View.VISIBLE);
             Bitmap bitmap = PictureUtils.getScaledBitmap(mPhotoFile.getPath(), this);
             Log.i(TAG, "mPhotoFile.getPath() = " + mPhotoFile.getPath());
+            mPhoto.setMaxHeight(100);
+            mPhoto.setMaxWidth(100);
             mPhoto.setImageBitmap(bitmap);
         }
     }

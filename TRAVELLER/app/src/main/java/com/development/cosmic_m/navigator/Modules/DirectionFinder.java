@@ -31,11 +31,13 @@ public class DirectionFinder {
     private String origin;
     private String destination;
     private DirectionFinderListener listener;
+    private List<String> transitPoints;
 
-    public DirectionFinder(DirectionFinderListener listener, String origin, String destination){
+    public DirectionFinder(DirectionFinderListener listener, String origin, String destination, List<String> transitPoints){
         this.listener = listener;
         this.origin = origin;
         this.destination = destination;
+        this.transitPoints = new ArrayList<>(transitPoints);
     }
 
     public void execute() throws UnsupportedEncodingException {
@@ -46,12 +48,17 @@ public class DirectionFinder {
     private String createUrl() throws UnsupportedEncodingException {
         String urlOrigin = URLEncoder.encode(origin, "utf-8");
         String urlDestination = URLEncoder.encode(destination, "utf-8");
-
+        String insertIn = "";
+        for (String str : transitPoints){
+            insertIn += "&waypoints=via:" + str;
+        }
+        Log.i(TAG, "insertIn = " + insertIn);
         return DIRECTION_URL_API
                 + "mode=walking"
                 + "&origin=" + urlOrigin
                 + "&destination=" +  urlDestination
                 //+ "&waypoints=via:49.759160,36.670041"
+                + insertIn
                 + "&key=" + GOOGLE_API_KEY;
     }
 
