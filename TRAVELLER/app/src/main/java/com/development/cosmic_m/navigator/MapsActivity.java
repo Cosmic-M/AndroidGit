@@ -12,6 +12,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -94,6 +96,12 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTargetBtn.setBackgroundResource(R.mipmap.finish_flag);
         mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
         mContainerMini.setVisibility(View.INVISIBLE);
+        mImage.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+
+            }
+        });
 
         mFindPath.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -260,6 +268,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             File file = PlaceLab.get(this).getPhotoFile(mp);
             Bitmap bitmap = PictureUtils.getScaledBitmap(file.getPath(), this);
             mImage.setImageBitmap(bitmap);
+
+            mImage.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = DetailPlaceActivity.newInstance(getApplicationContext(), mp);
+                    startActivity(intent);
+                }
+            });
+
             if(mTransitionPoints.contains(mp.getLatLng())){
                 mTransitBtn.setBackgroundResource(R.mipmap.transit_cancel);
             }

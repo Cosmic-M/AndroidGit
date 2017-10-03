@@ -43,6 +43,7 @@
         </activity>
         <activity android:name=".AddPointActivity"/>
         <activity android:name=".PlacePagerActivity"/>
+        <activity android:name=".DetailPlaceActivity"/>
     </application>
 
 </manifest>

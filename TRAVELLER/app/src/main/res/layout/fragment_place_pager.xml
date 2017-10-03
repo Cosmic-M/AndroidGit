@@ -1,45 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--android:orientation="vertical"-->
+<!--android:layout_width="match_parent"-->
+<!--android:layout_height="match_parent">-->
 
-<!--<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/scroll_id">-->
-
-    <!--<LinearLayout-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:orientation="vertical">-->
-
-    <ImageView
-        android:layout_width="380dp"
-        android:layout_height="250dp"
-        android:layout_gravity="center_horizontal"
-        android:id="@+id/iv_picture"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_latitude"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/tv_longitude"/>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/scroll_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/layout_id"/>
+        android:orientation="vertical">
 
-    <!--<com.development.cosmic_m.navigator.JustifiedTextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/justified_text_view_id">-->
-    <!--</com.development.cosmic_m.navigator.JustifiedTextView>-->
-</LinearLayout>
-<!--</ScrollView>-->
+        <ImageView
+            android:id="@+id/iv_picture"
+            android:layout_width="380dp"
+            android:layout_height="250dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/tv_latitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tv_longitude"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <com.development.cosmic_m.navigator.JustifiedTextView
+            android:id="@+id/justified_text_view_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/secondary_text_light"
+            android:textSize="14sp"/>
+
+    </LinearLayout>
+</ScrollView>

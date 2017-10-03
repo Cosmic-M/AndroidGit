@@ -1,13 +1,9 @@
 package com.development.cosmic_m.navigator;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.DashPathEffect;
 import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -28,14 +24,26 @@ public class JustifiedTextView extends View {
     private int mWidthScreen;
     private boolean flag, newFlag;
 
-    public JustifiedTextView(Context context, String text, int widthScreen){
+        public JustifiedTextView(Context context){
             super(context);
-        mText = text;
-        mWidthScreen = widthScreen - 10;
+            mContext = context;
         }
 
-    @Override protected void onDraw(Canvas canvas) {
+        public JustifiedTextView(Context context, AttributeSet attr){
+            super(context, attr);
+            mContext = context;
+        }
+
+        public void setText(String text){
+            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            mWidthScreen = wm.getDefaultDisplay().getWidth() - 10;
+            mText = text;
+        }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+        Log.i(TAG, "onDraw() called");
         String word, sp, line = "";
         int wordCount = 0, y = 0, x = 5, nextX = 0;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -58,6 +66,7 @@ public class JustifiedTextView extends View {
                 drawString(canvas, line, wordCount, (int) mPaint.measureText(line), y+b1);
                 line = "";
                 wordCount = 0;
+                wordCount = 1;
                 x = 5;
                 y = y + (fh * 2);
                 flag = true;

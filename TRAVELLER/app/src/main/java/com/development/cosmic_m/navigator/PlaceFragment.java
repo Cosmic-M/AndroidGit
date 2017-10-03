@@ -36,9 +36,7 @@ public class PlaceFragment extends Fragment {
     private ImageView mImagePlace;
     private TextView mLatitude;
     private TextView mLongitude;
-    private LinearLayout mLinearLayout;
-    //private ScrollView mScrollView;
-    //private JustifiedTextView mJustifiedTextView;
+    private JustifiedTextView mJustifiedTextView;
 
     public static PlaceFragment newInstance(MemoryPlace mp){
         Bundle args = new Bundle();
@@ -61,25 +59,10 @@ public class PlaceFragment extends Fragment {
         mImagePlace = (ImageView) view.findViewById(R.id.iv_picture);
         mLatitude = (TextView) view.findViewById(R.id.tv_latitude);
         mLongitude = (TextView) view.findViewById(R.id.tv_longitude);
-        mLinearLayout = (LinearLayout) view.findViewById(R.id.layout_id);
-        //mScrollView = (ScrollView) view.findViewById(R.id.scroll_id);
-        //mJustifiedTextView = (JustifiedTextView) view.findViewById(R.id.justified_text_view_id);
+        mJustifiedTextView = (JustifiedTextView) view.findViewById(R.id.justified_text_view_id);
 
         String text = mPlace.getTextDescription();
-        WindowManager wm = getActivity().getWindowManager();
-        int widthScreen = wm.getDefaultDisplay().getWidth();
-        Log.i(TAG, "widthScreen = " + widthScreen);
-        JustifiedTextView justifiedTextView = new JustifiedTextView(getActivity(), text, widthScreen);
-        //mJustifiedTextView = justifiedTextView;
-        //String text = mPlace.getTextDescription();
-        //justifiedTextView.setText(text);
-
-        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        justifiedTextView.setLayoutParams(layoutParams);
-        mLinearLayout.addView(justifiedTextView);
-        //justifiedTextView.setLayoutParams(layoutParams);
-        //mLinearLayout.addView(justifiedTextView);
+        mJustifiedTextView.setText(text);
         Bitmap bitmap = PictureUtils.getScaledBitmap(PlaceLab.get(getActivity())
                 .getPhotoFile(mPlace).getPath(), getActivity());
         mImagePlace.setImageBitmap(bitmap);
