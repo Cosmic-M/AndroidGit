@@ -13,10 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.development.cosmic_m.navigator.Modules.MemoryPlace;
 
@@ -36,6 +38,7 @@ public class PlaceFragment extends Fragment {
     private ImageView mImagePlace;
     private TextView mLatitude;
     private TextView mLongitude;
+    private Button mRemoveBtn;
     private JustifiedTextView mJustifiedTextView;
 
     public static PlaceFragment newInstance(MemoryPlace mp){
@@ -56,11 +59,18 @@ public class PlaceFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle bundle){
         View view = inflater.inflate(R.layout.fragment_place_pager, container, false);
+        mRemoveBtn = (Button) view.findViewById(R.id.btn_remove_point);
         mImagePlace = (ImageView) view.findViewById(R.id.iv_picture);
         mLatitude = (TextView) view.findViewById(R.id.tv_latitude);
         mLongitude = (TextView) view.findViewById(R.id.tv_longitude);
         mJustifiedTextView = (JustifiedTextView) view.findViewById(R.id.justified_text_view_id);
 
+        mRemoveBtn.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Toast.makeText(getActivity(), "POINT REMOVED", Toast.LENGTH_SHORT).show();
+            }
+        });
         String text = mPlace.getTextDescription();
         mJustifiedTextView.setText(text);
         Bitmap bitmap = PictureUtils.getScaledBitmap(PlaceLab.get(getActivity())

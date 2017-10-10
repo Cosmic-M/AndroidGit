@@ -3,6 +3,7 @@ package com.development.cosmic_m.navigator;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -157,6 +159,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.clear_all_appointed_points_item:
                 Log.i(TAG, "you select: CLEAR");
                 Toast.makeText(this, "CLEAR", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(MapsActivity.this);
+                alertDialog.setTitle(R.string.request);
+                alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDestinationPoint = null;
+                        mTransitionPoints.clear();
+                        mDestinationMarker = null;
+                        updateCamera();
+                    }
+                });
+                alertDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which){
+                }
+            });
+                AlertDialog dialog = alertDialog.create();
+                dialog.show();
                 return true;
             case R.id.preview_points_item:
                 Log.i(TAG, "you select: PREVIEW");

@@ -33,6 +33,7 @@ public class AddPointActivity extends AppCompatActivity{
     private static final String TAG = "TAG";
 
     private static final int REQUEST_PHOTO = 100;
+    private static final String PHOTO_FILE = "photo_file";
 
     private TextView mLatitude;
     private TextView mLongitude;
@@ -47,6 +48,12 @@ public class AddPointActivity extends AppCompatActivity{
 
     public static Intent newIntent(Context context){
         return new Intent(context, AddPointActivity.class);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle saveInstanceState){
+        super.onSaveInstanceState(saveInstanceState);
+        saveInstanceState.putSerializable(PHOTO_FILE, mPhotoFile);
     }
 
     @Override
@@ -74,8 +81,12 @@ public class AddPointActivity extends AppCompatActivity{
         PackageManager packageManager = getApplicationContext().getPackageManager();
         mp = new MemoryPlace(myLatLng);
         //PlaceLab.get(getApplicationContext()).addMemoryPlace(mp);
-
-        mPhotoFile = PlaceLab.get(getApplicationContext()).getPhotoFile(mp);
+        if (savedInstanceState != null){
+            mPhotoFile = (File) savedInstanceState.getSerializable(PHOTO_FILE);
+        }
+        else {
+            mPhotoFile = PlaceLab.get(getApplicationContext()).getPhotoFile(mp);
+        }
 
         final Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 

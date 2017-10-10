@@ -53,7 +53,7 @@ public class DetailPlaceActivity extends AppCompatActivity {
 //        mImage = (ImageView) findViewById(R.id.iv_picture);
         mLatitude = (TextView) findViewById(R.id.tv_latitude);
         mLongitude = (TextView) findViewById(R.id.tv_longitude);
-        mJustifiedTextView = (JustifiedTextView) findViewById(R.id.justified_text_view_id);
+        //mJustifiedTextView = (JustifiedTextView) findViewById(R.id.justified_text_view_id);
 //
 //        String text = mMemoryPlace.getTextDescription();
 //        mJustifiedTextView.setText(text);
@@ -67,7 +67,7 @@ public class DetailPlaceActivity extends AppCompatActivity {
         mLongitude.setText(String.valueOf(longit));
         String t = getIntent().getStringExtra(EXTRA_DESCRIPTION);
         Log.i(TAG, "text = " + t);
-        mJustifiedTextView.setText(t);
+       // mJustifiedTextView.setText(t);
 //        mLatitude.setText(String.valueOf(mMemoryPlace.getLatLng().latitude));
 //        mLongitude.setText(String.valueOf(mMemoryPlace.getLatLng().longitude));
     }
