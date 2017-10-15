@@ -33,19 +33,16 @@ public class JustifiedTextView extends View {
 
     public JustifiedTextView(Context context){
         super(context);
-        Log.i(TAG, "JustifiedTextView/JustifiedTextView(Context context)");
         mContext = context;
     }
 
     public JustifiedTextView(Context context, AttributeSet attr){
         super(context, attr);
-        Log.i(TAG, "JustifiedTextView/JustifiedTextView(Context context, AttributeSet attr)");
         mContext = context;
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        Log.i(TAG, "onMeasure");
         int desiredWidth = mWidthScreen;
         int desiredHeight = mHeightScreen + 5;
 
@@ -95,7 +92,6 @@ public class JustifiedTextView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.i(TAG, "JustifiedTextView/onDraw called");
         String word, sp, line = "";
         int wordCount = 0, y = 0, x = 5, nextX = 0;
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -156,7 +152,6 @@ public class JustifiedTextView extends View {
 
     private void drawString(Canvas canvas, String line, int wCount, int lineWidth, int y){
         mHeightScreen = y;
-        Log.i(TAG, "JustifiedTextView/drawString() called");
         if (lineWidth < .75 * mWidthScreen){
             canvas.drawText(line, 5, y, mPaint);
         }

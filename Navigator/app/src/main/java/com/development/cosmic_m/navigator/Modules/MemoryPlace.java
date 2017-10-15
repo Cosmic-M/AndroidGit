@@ -13,12 +13,14 @@ import java.util.UUID;
  */
 
 public class MemoryPlace implements Serializable{
+    private int _id;
     private UUID mId;
     private LatLng mLatLng;
     private String mFileName;
     private String mTextDescription;
 
-    public MemoryPlace(LatLng latLng, String fileName, String description){
+    public MemoryPlace(int id, LatLng latLng, String fileName, String description){
+        _id = id;
         mLatLng = latLng;
         //mDate = new Date(date);
         mFileName = fileName;
@@ -42,6 +44,10 @@ public class MemoryPlace implements Serializable{
 
     public UUID getId(){
         return mId;
+    }
+
+    public int getIdRowDb() {
+        return _id;
     }
 
     public String getPhotoFileName(){

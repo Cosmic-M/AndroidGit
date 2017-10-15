@@ -1,8 +1,9 @@
 <resources>
-    <string name="app_name">Navigator</string>
+    <string name="app_name">ROAD TRAVELLER</string>
     <string name="title_activity_maps">TRAVELLER</string>
     <string name="request">СБРОСИТЬ МАРКЕРА?</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
     <string name="remove">REMOVE</string>
+    <string name="remove_point_question">УДАЛИТЬ МЕСТОПОЛОДЕНИЕ ИЗ БАЗЫ ДАННЫХ?</string>
 </resources>

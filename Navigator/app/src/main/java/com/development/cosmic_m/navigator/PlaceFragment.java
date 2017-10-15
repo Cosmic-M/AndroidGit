@@ -1,12 +1,18 @@
 package com.development.cosmic_m.navigator;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +36,7 @@ import java.util.StringTokenizer;
  * Created by Cosmic_M on 17.09.2017.
  */
 
-public class PlaceFragment extends Fragment {
+public class PlaceFragment extends Fragment{
     private static final String TAG = "TAG";
     private static final String EXTRA_ARG = "com.development.cosmic_m.navigator.PlaceFragment";
 
@@ -53,7 +59,6 @@ public class PlaceFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPlace = (MemoryPlace) getArguments().getSerializable(EXTRA_ARG);
-        Log.i(TAG, "PlaceFragment / mPlace.getLatLng().latitude = " + mPlace.getLatLng().latitude);
     }
 
     @Override
@@ -68,7 +73,23 @@ public class PlaceFragment extends Fragment {
         mRemoveBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Toast.makeText(getActivity(), "POINT REMOVED", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder questionDialog = new AlertDialog.Builder(getActivity());
+                questionDialog.setTitle(R.string.remove_point_question);
+                questionDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        int row = PlaceLab.get(getActivity()).removeRowDbById(mPlace.getIdRowDb());
+                        ((PlacePagerActivity) getActivity()).notifyPagerAdapter();
+                    }
+                });
+                questionDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(getActivity(), "maybe later...", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                Dialog dialog = questionDialog.create();
+                dialog.show();
             }
         });
         String text = mPlace.getTextDescription();

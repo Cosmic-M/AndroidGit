@@ -7,6 +7,7 @@ package com.development.cosmic_m.navigator.Database;
 public class SchemaDB {
     public static final String TABLE_NAME = "memory_place_table";
     public static final class Cols{
+        public static final String ID = "primary_key";
         public static final String LATITUDE = "latitude";
         public static final String LONGITUDE = "longitude";
         public static final String FILE_IMAGE_NAME = "file_image_name";

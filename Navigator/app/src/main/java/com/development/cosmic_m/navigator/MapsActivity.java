@@ -13,6 +13,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
@@ -55,7 +56,7 @@ import static com.google.android.gms.maps.GoogleMap.*;
 
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, DirectionFinderListener, OnMarkerClickListener {
 
-    private static final String TAG = "MapsActivity";
+    private static final String TAG = "TAG";
     private static final int REQUEST_NEW_POINT = 250;
     private GoogleMap mMap;
     private EditText mOrigin;
@@ -355,14 +356,17 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void updateCamera(){
-        if (mMap == null) return;
+        if (mMap == null) {
+            Log.i(TAG, "mMap = null");
+            return;
+        }
         originMarkers.clear();
         mMap.clear();
         List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlace();
+        Log.i(TAG, "List<MemoryPlace> list.size() = " + list.size());
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for (int i = 0; i < list.size(); i++) {
             bounds.include(list.get(i).getLatLng());
-
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .title("HUE_RED")
                     .position(list.get(i).getLatLng())));

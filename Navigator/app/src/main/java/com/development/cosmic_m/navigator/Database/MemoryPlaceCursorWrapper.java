@@ -1,5 +1,6 @@
 package com.development.cosmic_m.navigator.Database;
 
+import android.app.IntentService;
 import android.database.Cursor;
 import android.database.CursorWrapper;
 
@@ -17,12 +18,13 @@ public class MemoryPlaceCursorWrapper extends CursorWrapper {
     }
 
     public MemoryPlace getPlace(){
+        int _id = getInt(getColumnIndex(SchemaDB.Cols.ID));
         Double latitude = getDouble(getColumnIndex(SchemaDB.Cols.LATITUDE));
         Double longitude = getDouble(getColumnIndex(SchemaDB.Cols.LONGITUDE));
         String file_name = getString(getColumnIndex(SchemaDB.Cols.FILE_IMAGE_NAME));
         String description = getString(getColumnIndex(SchemaDB.Cols.DESCRIPTION));
         LatLng latLng = new LatLng(latitude, longitude);
-        MemoryPlace mp = new MemoryPlace(latLng, file_name, description);
+        MemoryPlace mp = new MemoryPlace(_id, latLng, file_name, description);
         return mp;
     }
 }

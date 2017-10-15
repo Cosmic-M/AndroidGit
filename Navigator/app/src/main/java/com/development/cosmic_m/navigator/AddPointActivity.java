@@ -76,11 +76,10 @@ public class AddPointActivity extends AppCompatActivity{
         formatter.close();
 
         LatLng myLatLng = new LatLng(getIntent()
-                .getDoubleExtra("latitude", 0) + 0.3, getIntent().getDoubleExtra("longitude", 0) + 0.3);
+                .getDoubleExtra("latitude", 0), getIntent().getDoubleExtra("longitude", 0));
 
         PackageManager packageManager = getApplicationContext().getPackageManager();
         mp = new MemoryPlace(myLatLng);
-        //PlaceLab.get(getApplicationContext()).addMemoryPlace(mp);
         if (savedInstanceState != null){
             mPhotoFile = (File) savedInstanceState.getSerializable(PHOTO_FILE);
         }
@@ -92,7 +91,6 @@ public class AddPointActivity extends AppCompatActivity{
 
         boolean canTakePhoto = mPhotoFile != null && cameraIntent.resolveActivity(packageManager) != null;
         mPhoto.setEnabled(canTakePhoto);
-        //PlaceLab.get(getApplicationContext()).insertPlaceIntoDB(mp);
         if (canTakePhoto){
             Uri uri = Uri.fromFile(mPhotoFile);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
@@ -138,7 +136,6 @@ public class AddPointActivity extends AppCompatActivity{
 
     private void updatePhotoView(){
         if (mPhotoFile == null || !mPhotoFile.exists()){
-            //mPhoto.setImageResource(R.mipmap.ic_camera_icon);
         }
         else{
             mPhoto.setVisibility(View.VISIBLE);

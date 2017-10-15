@@ -10,38 +10,43 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.development.cosmic_m.navigator.Modules.MemoryPlace;
+
+import java.io.File;
 
 /**
  * Created by Cosmic_M on 03.10.2017.
  */
 
 public class DetailPlaceActivity extends AppCompatActivity {
-    private static final String TAG = "DetailPlaceActivity";
-    private static final String EXTRA = "com.development.cosmic_m.navigator.Modules.MemoryPlace";
     private static final String EXTRA_LATITUDE = "latitude";
     private static final String EXTRA_LONGITUDE = "longitude";
     private static final String EXTRA_DESCRIPTION = "text_description";
-    private MemoryPlace mMemoryPlace;
+    private static final String EXTRA_FILE = "file";
+
     private ImageView mImage;
     private TextView mLatitude;
     private TextView mLongitude;
+    private Button mRemoveBtn;
     private JustifiedTextView mJustifiedTextView;
 
 
     public static Intent newInstance(Context context, MemoryPlace memoryPlace){
         Intent intent = new Intent(context, DetailPlaceActivity.class);
-//        intent.putExtra(EXTRA, memoryPlace);
+        File file = PlaceLab.get(context).getPhotoFile(memoryPlace);
         double latitude = memoryPlace.getLatLng().latitude;
         double longitude = memoryPlace.getLatLng().longitude;
         String text = memoryPlace.getTextDescription();
-        Log.i(TAG, "latitude = " + latitude + ", longitude = " + longitude);
+
+        intent.putExtra(EXTRA_FILE, file);
         intent.putExtra(EXTRA_LATITUDE, latitude);
         intent.putExtra(EXTRA_LONGITUDE, longitude);
         intent.putExtra(EXTRA_DESCRIPTION, text);
+
         return intent;
     }
 
@@ -49,26 +54,22 @@ public class DetailPlaceActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_place_pager);
-//        mMemoryPlace = (MemoryPlace) getIntent().getSerializableExtra(EXTRA);
-//        mImage = (ImageView) findViewById(R.id.iv_picture);
+        mImage = (ImageView) findViewById(R.id.iv_picture);
         mLatitude = (TextView) findViewById(R.id.tv_latitude);
         mLongitude = (TextView) findViewById(R.id.tv_longitude);
-        //mJustifiedTextView = (JustifiedTextView) findViewById(R.id.justified_text_view_id);
-//
-//        String text = mMemoryPlace.getTextDescription();
-//        mJustifiedTextView.setText(text);
-//        Bitmap bitmap = PictureUtils.getScaledBitmap(PlaceLab.get(this)
-//                .getPhotoFile(mMemoryPlace).getPath(), this);
-//        mImage.setImageBitmap(bitmap);
+        mRemoveBtn = (Button) findViewById(R.id.btn_remove_point);
+        mRemoveBtn.setVisibility(View.INVISIBLE);
+        mJustifiedTextView = (JustifiedTextView) findViewById(R.id.justified_text_view_id);
+
+        File photoFile = (File) getIntent().getSerializableExtra(EXTRA_FILE);
         double latit = getIntent().getDoubleExtra(EXTRA_LATITUDE, 0);
         double longit = getIntent().getDoubleExtra(EXTRA_LONGITUDE, 0);
-        Log.i(TAG, "latit = " + latit + ", longit = " + longit);
+        String textDescription = getIntent().getStringExtra(EXTRA_DESCRIPTION);
+
+        Bitmap bitmap = PictureUtils.getScaledBitmap(photoFile.getPath(), this);
+        mImage.setImageBitmap(bitmap);
         mLatitude.setText(String.valueOf(latit));
         mLongitude.setText(String.valueOf(longit));
-        String t = getIntent().getStringExtra(EXTRA_DESCRIPTION);
-        Log.i(TAG, "text = " + t);
-       // mJustifiedTextView.setText(t);
-//        mLatitude.setText(String.valueOf(mMemoryPlace.getLatLng().latitude));
-//        mLongitude.setText(String.valueOf(mMemoryPlace.getLatLng().longitude));
+        mJustifiedTextView.setText(textDescription);
     }
 }

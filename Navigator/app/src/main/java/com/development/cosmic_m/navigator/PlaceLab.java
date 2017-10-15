@@ -156,7 +156,6 @@ public class PlaceLab {
         try{
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                Log.i(TAG, "while...add(memoryPlace)");
                 memoryPlace = cursor.getPlace();
                 listPlaces.add(memoryPlace);
                 cursor.moveToNext();
@@ -166,6 +165,11 @@ public class PlaceLab {
             cursor.close();
         }
         return listPlaces;
+    }
+
+    public int removeRowDbById(int id){
+        return mBase.delete(SchemaDB.TABLE_NAME,
+                SchemaDB.Cols.ID + " =? ", new String[]{String.valueOf(id)});
     }
 
     private void saveImageToFileSystem(Context context, MemoryPlace memoryPlace, int resource){

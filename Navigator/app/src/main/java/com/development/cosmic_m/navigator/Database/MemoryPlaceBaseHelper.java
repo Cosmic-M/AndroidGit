@@ -19,7 +19,7 @@ public class MemoryPlaceBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db){
         db.execSQL("create table " + SchemaDB.TABLE_NAME + "("
-                + "_id integer primary key autoincrement, "
+                + SchemaDB.Cols.ID + " integer primary key autoincrement, "
                 + SchemaDB.Cols.LATITUDE + ", "
                 + SchemaDB.Cols.LONGITUDE + ", "
                 + SchemaDB.Cols.FILE_IMAGE_NAME + ", "
