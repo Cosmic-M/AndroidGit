@@ -2,6 +2,7 @@ package com.development.cosmic_m.navigator;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,8 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -18,10 +21,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -48,8 +54,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.File;
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.List;
 
 import static com.google.android.gms.maps.GoogleMap.*;
@@ -65,6 +73,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng mDestinationPoint;
     private Marker mDestinationMarker;
     private List<LatLng> mTransitionPoints = new ArrayList<>();
+    private List<MemoryPlace> mListSavedLocations;
     private RelativeLayout mContainerMini;
     private Button mFindPath;
     private Button mShowAllPlaces;
@@ -78,12 +87,30 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ImageView mHidePicture;
     private ImageView mTargetBtn;
     private ImageView mTransitBtn;
+    private ChoiceDialog choiceDialog;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onSaveInstanceState(Bundle saveInstanceState) {
+        super.onSaveInstanceState(saveInstanceState);
+        Log.i(TAG, "onSaveInstanceState(Bundle saveInstanceState)");
+        saveInstanceState.putParcelable("destination", mDestinationPoint);
+        saveInstanceState.putParcelable("myLocation", myLocation);
+        saveInstanceState.putParcelableArrayList("latlng", (ArrayList<? extends Parcelable>) mTransitionPoints);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate called");
+        Log.i(TAG, "onCreate(Bundle savedInstanceState)");
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState != null) {
+            Log.i(TAG, "savedInstanceState != null => TRUE");
+            mDestinationPoint = savedInstanceState.getParcelable("destination");
+            myLocation = savedInstanceState.getParcelable("myLocation");
+            mTransitionPoints = savedInstanceState.getParcelableArrayList("latlng");
+        }
+
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -99,9 +126,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         mTargetBtn.setBackgroundResource(R.mipmap.finish_flag);
         mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
         mContainerMini.setVisibility(View.INVISIBLE);
-        mImage.setOnClickListener(new View.OnClickListener(){
+        mImage.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
+            public void onClick(View view) {
 
             }
         });
@@ -110,10 +137,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "find path...");
-                if (myLocation == null && mDestinationPoint == null){
+                if (myLocation == null && mDestinationPoint == null) {
                     Toast.makeText(MapsActivity.this, "Destination Or Current Location Is Absent!", Toast.LENGTH_SHORT).show();
-                }
-                else{
+                } else {
                     sendRequest();
                 }
             }
@@ -142,21 +168,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             return;
         }
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10 * 1000, 10, mLocationListener);
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10*1000, 10, mLocationListener);
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 10 * 1000, 10, mLocationListener);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu){
+    public boolean onCreateOptionsMenu(Menu menu) {
         Log.i(TAG, "onCreateOptionsMenu called");
         getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem menuItem){
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
         Log.i(TAG, "onOptionsItemSelected called");
-        Intent intent;
-        switch(menuItem.getItemId()){
+        final Intent intent;
+        switch (menuItem.getItemId()) {
             case R.id.clear_all_appointed_points_item:
                 Log.i(TAG, "you select: CLEAR");
                 Toast.makeText(this, "CLEAR", Toast.LENGTH_SHORT).show();
@@ -171,11 +197,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                         updateCamera();
                     }
                 });
-                alertDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener(){
+                alertDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialogInterface, int which){
-                }
-            });
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                    }
+                });
                 AlertDialog dialog = alertDialog.create();
                 dialog.show();
                 return true;
@@ -188,14 +214,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             case R.id.new_point_item:
                 Log.i(TAG, "you select: NEW POINT");
                 Toast.makeText(this, "NEW POINT", Toast.LENGTH_SHORT).show();
-                if (myLocation != null) {
-                    intent = AddPointActivity.newIntent(this);
-                    intent.putExtra("latitude", myLocation.latitude);
-                    intent.putExtra("longitude", myLocation.longitude);
-                    startActivityForResult(intent, REQUEST_NEW_POINT);
-                }
-                else{
+                if (myLocation == null) {
                     Toast.makeText(this, "try later, current location is't detected", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                intent = AddPointActivity.newIntent(MapsActivity.this);
+                intent.putExtra("latitude", myLocation.latitude);
+                intent.putExtra("longitude", myLocation.longitude);
+
+                if (isNearSavedLocation(myLocation) != null) {
+                    LatLng near = isNearSavedLocation(myLocation);
+                    String stringSubtitle = getString(R.string.add_point_question_dialog, "point lat:"
+                            + new Formatter().format("%.6f", near.latitude)
+                            + ", lng:" + new Formatter().format("%.6f", near.longitude));
+                    choiceDialog = ChoiceDialog.newInstance(stringSubtitle);
+                    //choiceDialog.show(getSupportFragmentManager(), "choice_dialog");
+                    getSupportFragmentManager().beginTransaction()
+                            .add(choiceDialog, "choice_dialog")
+                            .commit();
+                }
+                else {
+                    startActivityForResult(intent, REQUEST_NEW_POINT);
                 }
                 return true;
             default:
@@ -204,11 +243,11 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (resultCode != Activity.RESULT_OK){
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK) {
             return;
         }
-        if (requestCode == REQUEST_NEW_POINT){
+        if (requestCode == REQUEST_NEW_POINT) {
             updateCamera();
         }
     }
@@ -238,35 +277,47 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     };
 
-    private void sendRequest(){
+    private LatLng isNearSavedLocation(@NonNull LatLng currentLocation) {
+        for (int i = 0; i < mListSavedLocations.size(); i++) {
+            LatLng latLng = mListSavedLocations.get(i).getLatLng();
+            if ((currentLocation.latitude < (latLng.latitude + 0.005)
+                    && currentLocation.latitude > (latLng.latitude - 0.005))
+                    && (currentLocation.longitude < (latLng.longitude + 0.005)
+                    && currentLocation.longitude > (latLng.longitude - 0.005))) {
+                return mListSavedLocations.get(i).getLatLng();
+            }
+        }
+        return null;
+    }
+
+    private void sendRequest() {
         String origin = String.valueOf(myLocation.latitude) + ", " + String.valueOf(myLocation.longitude);
         Log.i(TAG, "origin = " + origin);
         String destination = String.valueOf(mDestinationPoint.latitude) + ", " + String.valueOf(mDestinationPoint.longitude);
         Log.i(TAG, "destination = " + destination);
         Log.i(TAG, "after initialize string's points");
-        if (origin.isEmpty()){
+        if (origin.isEmpty()) {
             Toast.makeText(this, "Enter the origin of route", Toast.LENGTH_SHORT).show();
         }
-        if (destination.isEmpty()){
+        if (destination.isEmpty()) {
             Toast.makeText(this, "Enter destination point", Toast.LENGTH_SHORT).show();
         }
-        try{
+        try {
             try {
                 new DirectionFinder(this, origin, destination, convertLatLngListToStringList(mTransitionPoints)).execute();
             } catch (UnsupportedEncodingException e) {
                 Log.i(TAG, e.getMessage());
                 e.printStackTrace();
             }
-        }
-        catch (UnsupportedOperationException exc){
+        } catch (UnsupportedOperationException exc) {
             Log.i(TAG, exc.getMessage());
             exc.printStackTrace();
         }
     }
 
-    private static List<String> convertLatLngListToStringList(List<LatLng> latLngsList){
+    private static List<String> convertLatLngListToStringList(List<LatLng> latLngsList) {
         List<String> list = new ArrayList<>();
-        for (LatLng latLng : latLngsList){
+        for (LatLng latLng : latLngsList) {
             list.add(String.valueOf(latLng.latitude) + "," + String.valueOf(latLng.longitude));
         }
         return list;
@@ -281,9 +332,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public boolean onMarkerClick(final Marker marker){
+    public boolean onMarkerClick(final Marker marker) {
         int tag;
-        if  (marker != null) {
+        if (marker != null) {
             tag = (int) marker.getTag();
             final MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
             File file = PlaceLab.get(this).getPhotoFile(mp);
@@ -298,16 +349,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
 
-            if(mTransitionPoints.contains(mp.getLatLng())){
+            if (mTransitionPoints.contains(mp.getLatLng())) {
                 mTransitBtn.setBackgroundResource(R.mipmap.transit_cancel);
-            }
-            else{
+            } else {
                 mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
             }
             mContainerMini.setVisibility(View.VISIBLE);
 
-            mHidePicture.setOnClickListener(new View.OnClickListener(){
-                public void onClick(View v){
+            mHidePicture.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View v) {
                     mContainerMini.setVisibility(View.INVISIBLE);
                 }
             });
@@ -340,42 +390,40 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mDestinationPoint = null;
                             mDestinationMarker = null;
                         }
-                    }
-                    else{
+                    } else {
                         marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                         mTransitBtn.setBackgroundResource(R.mipmap.transition_flag);
                         mTransitionPoints.remove(mp.getLatLng());
                     }
                 }
             });
-        }
-        else {
+        } else {
             Log.i(TAG, "marker == null -> true");
         }
         return false;
     }
 
-    private void updateCamera(){
+    private void updateCamera() {
         if (mMap == null) {
             Log.i(TAG, "mMap = null");
             return;
         }
         originMarkers.clear();
         mMap.clear();
-        List<MemoryPlace> list = PlaceLab.get(getApplicationContext()).getMemoryPlace();
-        Log.i(TAG, "List<MemoryPlace> list.size() = " + list.size());
+        mListSavedLocations = PlaceLab.get(getApplicationContext()).getMemoryPlace();
+        Log.i(TAG, "List<MemoryPlace> list.size() = " + mListSavedLocations.size());
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
-        for (int i = 0; i < list.size(); i++) {
-            bounds.include(list.get(i).getLatLng());
+        for (int i = 0; i < mListSavedLocations.size(); i++) {
+            bounds.include(mListSavedLocations.get(i).getLatLng());
             originMarkers.add(mMap.addMarker(new MarkerOptions()
                     .title("HUE_RED")
-                    .position(list.get(i).getLatLng())));
+                    .position(mListSavedLocations.get(i).getLatLng())));
             originMarkers.get(i).setTag(i);
-            if (list.get(i).getLatLng().equals(mDestinationPoint)) {
+            if (mListSavedLocations.get(i).getLatLng().equals(mDestinationPoint)) {
                 Marker marker = originMarkers.get(i);
                 marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
             }
-            if (mTransitionPoints.contains(list.get(i).getLatLng())){
+            if (mTransitionPoints.contains(mListSavedLocations.get(i).getLatLng())) {
                 Marker marker = originMarkers.get(i);
                 marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             }
@@ -418,7 +466,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
         if (polylinePaths != null) {
-            for (Polyline polyline : polylinePaths ) {
+            for (Polyline polyline : polylinePaths) {
                 polyline.remove();
             }
         }
