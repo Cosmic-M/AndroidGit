@@ -3,13 +3,11 @@ package com.development.cosmic_m.navigator;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 
 import com.development.cosmic_m.navigator.Modules.MemoryPlace;
 
@@ -37,6 +35,7 @@ PlacePagerActivity extends FragmentActivity {
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setResult(RESULT_OK);
         setContentView(R.layout.activity_place_pager);
         mViewPager = (ViewPager) findViewById(R.id.activity_place_pager_view_pager);
         mPlaceList = PlaceLab.get(this).getMemoryPlace();

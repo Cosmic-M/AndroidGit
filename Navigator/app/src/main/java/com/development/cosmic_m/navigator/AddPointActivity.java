@@ -66,20 +66,20 @@ public class AddPointActivity extends AppCompatActivity{
         mPhoto = (ImageView) findViewById(R.id.image_id);
         mNotationText = (EditText) findViewById(R.id.et_notations);
         mCameraButton = (ImageButton) findViewById(R.id.camera_id);
+
+        LatLng latLng = getIntent().getParcelableExtra("latlng");
+
         Formatter formatter = new Formatter();
-        formatter.format("%.6f", getIntent().getDoubleExtra("latitude", 0));
+        formatter.format("%.6f", latLng.latitude);
         mLatitude.setText(formatter.toString());
         formatter.close();
         formatter = new Formatter();
-        formatter.format("%.6f", getIntent().getDoubleExtra("longitude", 0));
+        formatter.format("%.6f", latLng.longitude);
         mLongitude.setText(formatter.toString());
         formatter.close();
 
-        LatLng myLatLng = new LatLng(getIntent()
-                .getDoubleExtra("latitude", 0), getIntent().getDoubleExtra("longitude", 0));
-
         PackageManager packageManager = getApplicationContext().getPackageManager();
-        mp = new MemoryPlace(myLatLng);
+        mp = new MemoryPlace(latLng);
         if (savedInstanceState != null){
             mPhotoFile = (File) savedInstanceState.getSerializable(PHOTO_FILE);
         }
@@ -110,6 +110,7 @@ public class AddPointActivity extends AppCompatActivity{
                 Log.i(TAG, "activity finish");
                 mp.setTextDescription(et);
                 PlaceLab.get(getApplicationContext()).insertPlaceIntoDB(mp);
+                setResult(RESULT_OK);
                 finish();
             }
         });

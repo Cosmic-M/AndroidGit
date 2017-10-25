@@ -30,6 +30,7 @@ import com.development.cosmic_m.navigator.Modules.MemoryPlace;
 
 import org.xmlpull.v1.XmlPullParser;
 
+import java.util.Formatter;
 import java.util.StringTokenizer;
 
 /**
@@ -98,8 +99,15 @@ public class PlaceFragment extends Fragment{
                 .getPhotoFile(mPlace).getPath(), getActivity());
         mImagePlace.setImageBitmap(bitmap);
 
-        mLatitude.setText(String.valueOf(mPlace.getLatLng().latitude));
-        mLongitude.setText(String.valueOf(mPlace.getLatLng().longitude));
+        Formatter formatter = new Formatter();
+        formatter.format("%.6f", mPlace.getLatLng().latitude);
+        mLatitude.setText(formatter.toString());
+        formatter.close();
+
+        formatter = new Formatter();
+        formatter.format("%.6f", mPlace.getLatLng().longitude);
+        mLongitude.setText(formatter.toString());
+        formatter.close();
         return  view;
     }
 }
