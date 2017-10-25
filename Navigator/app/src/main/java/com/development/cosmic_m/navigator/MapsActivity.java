@@ -18,14 +18,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +42,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Formatter;
@@ -61,32 +56,24 @@ public class MapsActivity extends AppCompatActivity
     private static final int REQUEST_NEW_POINT = 250;
     private static final int REQUEST_NEW_POINT_REMOVE_OLD_DESTINATION = 350;
     private static final int PREVIEW_POINTS = 450;
-    private GoogleMap mMap;
-    private EditText mOrigin;
-    private EditText mDestination;
 
-    private LatLng mDestinationPoint;
-    private Marker mDestinationMarker;
-    private int tagOfDestinationPoint;
-    private List<LatLng> mTransitionPoints = new ArrayList<>();
-    private List<MemoryPlace> mListSavedLocations;
-    private RelativeLayout mContainerMini;
     private Button mFindPath;
     private Button mShowAllPlaces;
+    private GoogleMap mMap;
+
+    private List<MemoryPlace> mListSavedLocations;
+
     private List<Marker> originMarkers = new ArrayList<>();
     private List<Marker> destinationMarkers = new ArrayList<>();
     private List<Polyline> polylinePaths = new ArrayList<>();
     private ProgressDialog progressDialog;
+    private LocationManager locationManager;
+
     private LatLng myLocation;
     private int idRowMustDelete;
-    private LocationManager locationManager;
-    private Marker mMarker;
-    private ImageView mImage;
-    private ImageView mHidePicture;
-    private ImageView mTargetBtn;
-    private ImageView mTransitBtn;
+    private LatLng mDestinationPoint;
+    private List<LatLng> mTransitionPoints = new ArrayList<>();
 
-    private List<MarkerOptions> mMarkerOptionsList = new ArrayList<>();
 
     @Override
     public void onSaveInstanceState(Bundle saveInstanceState) {
@@ -95,9 +82,6 @@ public class MapsActivity extends AppCompatActivity
         saveInstanceState.putParcelable("myLocation", myLocation);
         saveInstanceState.putParcelableArrayList("latlng", (ArrayList<? extends Parcelable>) mTransitionPoints);
         saveInstanceState.putInt("rowMustDelete", idRowMustDelete);
-        saveInstanceState.putInt("destination_tag", tagOfDestinationPoint);
-        saveInstanceState.putParcelableArrayList("marker_options", (ArrayList<? extends Parcelable>) mMarkerOptionsList);
-        saveInstanceState.putInt("tag", tagOfDestinationPoint);
     }
 
     @Override
@@ -110,9 +94,6 @@ public class MapsActivity extends AppCompatActivity
             myLocation = savedInstanceState.getParcelable("myLocation");
             mTransitionPoints = savedInstanceState.getParcelableArrayList("latlng");
             idRowMustDelete = savedInstanceState.getInt("rowMustDelete");
-            tagOfDestinationPoint = savedInstanceState.getInt("destination_tag");
-            mMarkerOptionsList = savedInstanceState.getParcelableArrayList("marker_options");
-            tagOfDestinationPoint = savedInstanceState.getInt("tag");
         }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -183,7 +164,6 @@ public class MapsActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         mDestinationPoint = null;
                         mTransitionPoints.clear();
-                        mDestinationMarker = null;
                         updateCamera();
                     }
                 });
@@ -337,54 +317,40 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public int onAssignTransitionPoint(int tag){
-        Log.i(TAG, "onAssignTransitionPoint() called");
         int resource;
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
         if (!mTransitionPoints.contains(mp.getLatLng())) {
-                        mMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
                         resource = R.mipmap.transit_cancel;
                         mTransitionPoints.add(mp.getLatLng());
                         if (mp.getLatLng().equals(mDestinationPoint)) {
                             mDestinationPoint = null;
-                            mDestinationMarker = null;
                         }
                     } else {
-                        mMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
                         resource = R.mipmap.transition_flag;
                         mTransitionPoints.remove(mp.getLatLng());
                     }
+                    updateCamera();
                     return resource;
     }
 
     @Override
-    public void onAssignDestinationPoint(int tag) {
-        Log.i(TAG, "onAssignDestinationPoint() called");
+    public int onAssignDestinationPoint(int tag) {
+        int resource = 0;
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
+        if (mTransitionPoints.contains(mp.getLatLng())){
+            resource = R.mipmap.transition_flag;
+        }
         mTransitionPoints.remove(mp.getLatLng());
-        Log.i(TAG, "markerOption.getTitle => " + mMarkerOptionsList.get(tagOfDestinationPoint).getTitle());
-        if (tagOfDestinationPoint != 0) {
-            mMarkerOptionsList.get(tagOfDestinationPoint) = new MarkerOptions().;
-        }
-        else{
-            tagOfDestinationPoint = tag;
-        }
-        if (!mp.getLatLng().equals(mDestinationPoint)) {
-            if (mDestinationMarker != null) {
-                mDestinationMarker.setIcon(BitmapDescriptorFactory
-                        .defaultMarker(BitmapDescriptorFactory.HUE_RED));
-            }
-        }
-        mMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
         mDestinationPoint = mp.getLatLng();
-        mDestinationMarker = mMarker;
+        updateCamera();
+        return resource;
     }
 
     @Override
-    public void onExcludePoint(int tag){
-        Log.i(TAG, "onExcludePoint() called");
+    public void onRemoveFragment(int tag){
         getSupportFragmentManager().beginTransaction()
-                .remove(getSupportFragmentManager()
-                        .findFragmentByTag(String.valueOf(tag)));
+                .remove(getSupportFragmentManager().findFragmentByTag("fragment"))
+                .commit();
     }
 
     @Override
@@ -401,7 +367,6 @@ public class MapsActivity extends AppCompatActivity
     public boolean onMarkerClick(final Marker marker) {
         int tag;
         if (marker != null) {
-            mMarker = marker;
             Log.i(TAG, "(marker != null) => TRUE");
             tag = (int) marker.getTag();
 
@@ -409,7 +374,7 @@ public class MapsActivity extends AppCompatActivity
             Log.i(TAG, "fragment == null is " + (fragment == null));
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
-                    .add(R.id.container_id, fragment)
+                    .add(R.id.container_id, fragment, "fragment")
                     .commit();
         }
         return false;
@@ -417,23 +382,17 @@ public class MapsActivity extends AppCompatActivity
 
     private void updateCamera() {
         if (mMap == null) {
-            Log.i(TAG, "mMap = null");
             return;
         }
         originMarkers.clear();
         mMap.clear();
-        mMarkerOptionsList.clear();
         mListSavedLocations = PlaceLab.get(getApplicationContext()).getMemoryPlace();
-        Log.i(TAG, "List<MemoryPlace> list.size() = " + mListSavedLocations.size());
         LatLngBounds.Builder bounds = new LatLngBounds.Builder();
         for (int i = 0; i < mListSavedLocations.size(); i++) {
             bounds.include(mListSavedLocations.get(i).getLatLng());
-
-            MarkerOptions markerOptions = new MarkerOptions()
-                    .title("HUE_RED")
-                    .position(mListSavedLocations.get(i).getLatLng());
-
-            originMarkers.add(mMap.addMarker(markerOptions));
+            originMarkers.add(mMap.addMarker(new MarkerOptions()
+                    .title("point " + i)
+                    .position(mListSavedLocations.get(i).getLatLng())));
             originMarkers.get(i).setTag(i);
             if (mListSavedLocations.get(i).getLatLng().equals(mDestinationPoint)) {
                 Marker marker = originMarkers.get(i);
@@ -443,7 +402,6 @@ public class MapsActivity extends AppCompatActivity
                 Marker marker = originMarkers.get(i);
                 marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
             }
-            mMarkerOptionsList.add(markerOptions);
         }
         if (myLocation != null) {
             bounds.include(myLocation);

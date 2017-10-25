@@ -7,9 +7,9 @@ import java.io.Serializable;
  */
 
 public interface RouteComposeListener extends Serializable{
-    void onAssignDestinationPoint(int tag);
+    int onAssignDestinationPoint(int tag);
     int onAssignTransitionPoint(int tag);
-    void onExcludePoint(int tag);
+    void onRemoveFragment(int tag);
     void onDetailedPointShow(int tag);
     int getResourceForTransitionImage(int tag);
 }

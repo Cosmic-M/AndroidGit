@@ -80,12 +80,17 @@ public class TinyPictureFragment extends Fragment implements View.OnClickListene
                 break;
             case R.id.btn_remove_point_id:
                 Log.i(TAG, "click on remove btn");
-                listener.onExcludePoint(tag);
+                listener.onRemoveFragment(tag);
                 break;
             case R.id.btn_target_point_id:
                 Log.i(TAG, "click on assign target btn");
-                listener.onAssignDestinationPoint(tag);
-                mAssignTransitionPoint.setBackgroundResource(R.mipmap.transition_flag);
+                int res = listener.onAssignDestinationPoint(tag);
+                if (res != 0){
+                    mAssignTransitionPoint.setImageResource(res);
+                }
+                else {
+                    mAssignTransitionPoint.setImageResource(R.mipmap.transition_flag);
+                }
                 break;
             case R.id.btn_transit_point_id:
                 Log.i(TAG, "click on assign transit btn");
