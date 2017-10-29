@@ -17,12 +17,11 @@ import java.io.File;
  * Created by Cosmic_M on 23.10.2017.
  */
 
-public class TinyPictureFragment extends Fragment implements View.OnClickListener{
+public class TinyPictureFragment extends Fragment implements View.OnClickListener {
     private static final String TAG = "TAG";
     private RouteComposeListener listener;
     private File file;
     private int tag;
-    private static final String EXTRA_LISTENER_ARG = "listener";
     private static final String EXTRA_TAG_ARG = "tag";
 
     private ImageView mDetailedPointShow;
@@ -30,29 +29,28 @@ public class TinyPictureFragment extends Fragment implements View.OnClickListene
     private ImageView mAssignTransitionPoint;
     private ImageView mExcludePoint;
 
-    public static TinyPictureFragment newInstance(RouteComposeListener listener, int tag){
+    public static TinyPictureFragment newInstance(int tag) {
         Bundle bundle = new Bundle();
         bundle.putInt(EXTRA_TAG_ARG, tag);
-        bundle.putSerializable(EXTRA_LISTENER_ARG, listener);
         TinyPictureFragment fragment = new TinyPictureFragment();
         fragment.setArguments(bundle);
         return fragment;
     }
 
     @Override
-    public void onCreate(Bundle saveInstanceState){
-        super.onCreate(saveInstanceState);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setRetainInstance(true);
         Log.i(TAG, "onCreate() / TinyPictureFragment called");
-        listener = (RouteComposeListener) getArguments().getSerializable(EXTRA_LISTENER_ARG);
         tag = getArguments().getInt(EXTRA_TAG_ARG);
         MemoryPlace mp = PlaceLab.get(getActivity()).getMemoryPlace().get(tag);
         file = PlaceLab.get(getActivity()).getPhotoFile(mp);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle saveInstanceState) {
         View view = inflater.inflate(R.layout.fragment_mini_image, container, false);
+        listener = (RouteComposeListener) getActivity();
         mDetailedPointShow = (ImageView) view.findViewById(R.id.mini_image_id);
         mAssignDestinationPoint = (ImageView) view.findViewById(R.id.btn_target_point_id);
         mAssignTransitionPoint = (ImageView) view.findViewById(R.id.btn_transit_point_id);
@@ -72,8 +70,8 @@ public class TinyPictureFragment extends Fragment implements View.OnClickListene
     }
 
     @Override
-    public void onClick(View view){
-        switch (view.getId()){
+    public void onClick(View view) {
+        switch (view.getId()) {
             case R.id.mini_image_id:
                 Log.i(TAG, "click on mini picture");
                 listener.onDetailedPointShow(tag);
@@ -85,16 +83,17 @@ public class TinyPictureFragment extends Fragment implements View.OnClickListene
             case R.id.btn_target_point_id:
                 Log.i(TAG, "click on assign target btn");
                 int res = listener.onAssignDestinationPoint(tag);
-                if (res != 0){
+                Log.i(TAG, "after click on assign target btn");
+                if (res != 0) {
                     mAssignTransitionPoint.setImageResource(res);
-                }
-                else {
+                } else {
                     mAssignTransitionPoint.setImageResource(R.mipmap.transition_flag);
                 }
                 break;
             case R.id.btn_transit_point_id:
                 Log.i(TAG, "click on assign transit btn");
                 int resource = listener.onAssignTransitionPoint(tag);
+                Log.i(TAG, "after click on assign target btn");
                 mAssignTransitionPoint.setImageResource(resource);
                 break;
             default:

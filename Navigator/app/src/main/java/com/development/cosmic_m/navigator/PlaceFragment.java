@@ -10,6 +10,7 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
@@ -59,6 +60,7 @@ public class PlaceFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         mPlace = (MemoryPlace) getArguments().getSerializable(EXTRA_ARG);
     }
 
@@ -73,24 +75,12 @@ public class PlaceFragment extends Fragment{
 
         mRemoveBtn.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v){
-                AlertDialog.Builder questionDialog = new AlertDialog.Builder(getActivity());
-                questionDialog.setTitle(R.string.remove_point_question);
-                questionDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int row = PlaceLab.get(getActivity()).removeRowDbById(mPlace.getIdRowDb());
-                        ((PlacePagerActivity) getActivity()).notifyPagerAdapter();
-                    }
-                });
-                questionDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(getActivity(), "maybe later...", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                Dialog dialog = questionDialog.create();
-                dialog.show();
+            public void onClick(View view){
+                int row = mPlace.getIdRowDb();
+                String text = getResources().getString(R.string.remove_point_question);
+                RemoveOrCancelDialog dialog = RemoveOrCancelDialog.newInstance(text, row);
+                dialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
+                dialog.show(getActivity().getSupportFragmentManager(), "dialog");
             }
         });
         String text = mPlace.getTextDescription();

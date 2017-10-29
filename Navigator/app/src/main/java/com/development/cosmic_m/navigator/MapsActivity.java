@@ -14,6 +14,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -73,7 +74,9 @@ public class MapsActivity extends AppCompatActivity
     private int idRowMustDelete;
     private LatLng mDestinationPoint;
     private List<LatLng> mTransitionPoints = new ArrayList<>();
+    private PolylineOptions mPolylineOptions;
 
+    private String mDistance;
 
     @Override
     public void onSaveInstanceState(Bundle saveInstanceState) {
@@ -82,7 +85,9 @@ public class MapsActivity extends AppCompatActivity
         saveInstanceState.putParcelable("myLocation", myLocation);
         saveInstanceState.putParcelableArrayList("latlng", (ArrayList<? extends Parcelable>) mTransitionPoints);
         saveInstanceState.putInt("rowMustDelete", idRowMustDelete);
-    }
+        saveInstanceState.putParcelable("polyline", mPolylineOptions);
+        saveInstanceState.putString("distance", mDistance);
+     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,8 @@ public class MapsActivity extends AppCompatActivity
             myLocation = savedInstanceState.getParcelable("myLocation");
             mTransitionPoints = savedInstanceState.getParcelableArrayList("latlng");
             idRowMustDelete = savedInstanceState.getInt("rowMustDelete");
+            mPolylineOptions = savedInstanceState.getParcelable("polyline");
+            mDistance = savedInstanceState.getString("distance");
         }
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -162,6 +169,7 @@ public class MapsActivity extends AppCompatActivity
                 alertDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        mPolylineOptions = null;
                         mDestinationPoint = null;
                         mTransitionPoints.clear();
                         updateCamera();
@@ -191,16 +199,16 @@ public class MapsActivity extends AppCompatActivity
                 MemoryPlace alongside = isNearSavedLocation(myLocation);
                 intent = AddPointActivity.newIntent(MapsActivity.this);
                 intent.putExtra("latlng", myLocation);
-                if (alongside == null){
+                if (alongside == null) {
                     startActivityForResult(intent, REQUEST_NEW_POINT);
-                }
-                else if(isNearSavedLocation(myLocation) != null){
+                } else if (isNearSavedLocation(myLocation) != null) {
                     idRowMustDelete = alongside.getIdRowDb();
                     LatLng near = alongside.getLatLng();
                     String stringSubtitle = getString(R.string.add_point_question_dialog, "point lat:"
                             + new Formatter().format("%.6f", near.latitude)
                             + ", lng:" + new Formatter().format("%.6f", near.longitude));
                     ChoiceDialog choiceDialog = ChoiceDialog.newInstance(stringSubtitle, myLocation);
+                    choiceDialog.setStyle(DialogFragment.STYLE_NO_TITLE, 0);
                     choiceDialog.show(getSupportFragmentManager(), "choice_dialog");
                 }
                 return true;
@@ -218,11 +226,11 @@ public class MapsActivity extends AppCompatActivity
         if (requestCode == REQUEST_NEW_POINT) {
             Log.i(TAG, "!!!REQUEST_NEW_POINT!!!");
             updateCamera();
-        } else if (requestCode == REQUEST_NEW_POINT_REMOVE_OLD_DESTINATION){
+        } else if (requestCode == REQUEST_NEW_POINT_REMOVE_OLD_DESTINATION) {
             Log.i(TAG, "!!!REQUEST_NEW_POINT_REMOVE_OLD_DESTINATION!!!");
             PlaceLab.get(this).removeRowDbById(idRowMustDelete);
             updateCamera();
-        } else if (requestCode == PREVIEW_POINTS){
+        } else if (requestCode == PREVIEW_POINTS) {
             Log.i(TAG, "PREVIEW_POINT");
             updateCamera();
         }
@@ -267,6 +275,10 @@ public class MapsActivity extends AppCompatActivity
     }
 
     private void sendRequest() {
+        if (myLocation == null || mDestinationPoint == null){
+            Toast.makeText(this, "current location or destination point is't determined", Toast.LENGTH_SHORT).show();
+            return;
+        }
         String origin = String.valueOf(myLocation.latitude) + ", " + String.valueOf(myLocation.longitude);
         Log.i(TAG, "origin = " + origin);
         String destination = String.valueOf(mDestinationPoint.latitude) + ", " + String.valueOf(mDestinationPoint.longitude);
@@ -308,7 +320,7 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onDetailedPointShow(int tag){
+    public void onDetailedPointShow(int tag) {
         Log.i(TAG, "onDetailedPointShow() called");
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
         Intent intent = DetailPlaceActivity.newInstance(getApplicationContext(), mp);
@@ -316,28 +328,30 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public int onAssignTransitionPoint(int tag){
+    public int onAssignTransitionPoint(int tag) {
+        Log.i(TAG, "onAssignTransitionPoint(int tag)");
         int resource;
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
         if (!mTransitionPoints.contains(mp.getLatLng())) {
-                        resource = R.mipmap.transit_cancel;
-                        mTransitionPoints.add(mp.getLatLng());
-                        if (mp.getLatLng().equals(mDestinationPoint)) {
-                            mDestinationPoint = null;
-                        }
-                    } else {
-                        resource = R.mipmap.transition_flag;
-                        mTransitionPoints.remove(mp.getLatLng());
-                    }
-                    updateCamera();
-                    return resource;
+            resource = R.mipmap.transit_cancel;
+            mTransitionPoints.add(mp.getLatLng());
+            if (mp.getLatLng().equals(mDestinationPoint)) {
+                mDestinationPoint = null;
+            }
+        } else {
+            resource = R.mipmap.transition_flag;
+            mTransitionPoints.remove(mp.getLatLng());
+        }
+        updateCamera();
+        return resource;
     }
 
     @Override
     public int onAssignDestinationPoint(int tag) {
+        Log.i(TAG, "onAssignDestinationPoint(int tag)");
         int resource = 0;
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
-        if (mTransitionPoints.contains(mp.getLatLng())){
+        if (mTransitionPoints.contains(mp.getLatLng())) {
             resource = R.mipmap.transition_flag;
         }
         mTransitionPoints.remove(mp.getLatLng());
@@ -347,14 +361,15 @@ public class MapsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRemoveFragment(int tag){
+    public void onRemoveFragment(int tag) {
+        Log.i(TAG, "onRemoveFragment(int tag)");
         getSupportFragmentManager().beginTransaction()
                 .remove(getSupportFragmentManager().findFragmentByTag("fragment"))
                 .commit();
     }
 
     @Override
-    public int getResourceForTransitionImage(int tag){
+    public int getResourceForTransitionImage(int tag) {
         MemoryPlace mp = PlaceLab.get(this).getMemoryPlace().get(tag);
         if (mTransitionPoints.contains(mp.getLatLng())) {
             return R.mipmap.transit_cancel;
@@ -370,11 +385,11 @@ public class MapsActivity extends AppCompatActivity
             Log.i(TAG, "(marker != null) => TRUE");
             tag = (int) marker.getTag();
 
-            TinyPictureFragment fragment = TinyPictureFragment.newInstance(this, tag);
+            TinyPictureFragment fragment = TinyPictureFragment.newInstance(tag);
             Log.i(TAG, "fragment == null is " + (fragment == null));
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
-                    .add(R.id.container_id, fragment, "fragment")
+                    .replace(R.id.container_id, fragment, "fragment")
                     .commit();
         }
         return false;
@@ -382,6 +397,32 @@ public class MapsActivity extends AppCompatActivity
 
     private void updateCamera() {
         if (mMap == null) {
+            return;
+        }
+        if (mPolylineOptions != null) {
+            mMap.clear();
+            polylinePaths.add(mMap.addPolyline(mPolylineOptions));
+
+            mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_marker))
+                    .position(myLocation));
+
+            for (LatLng point : mTransitionPoints) {
+                mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.transition_marker))
+                        .position(point));
+            }
+            mMap.addMarker(new MarkerOptions()
+            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.finish_marker))
+                    .position(mDestinationPoint));
+
+            ((TextView) findViewById(R.id.tvDistance)).setText(mDistance);
+
+//            getSupportFragmentManager()
+//                    .beginTransaction()
+//                    .remove(getSupportFragmentManager().findFragmentByTag("fragment"))
+//                    .commit();
+
             return;
         }
         originMarkers.clear();
@@ -454,24 +495,36 @@ public class MapsActivity extends AppCompatActivity
         originMarkers = new ArrayList<>();
         destinationMarkers = new ArrayList<>();
         for (Route route : routes) {
+            Log.i(TAG, "ROUTE ###");
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(route.startLocation, 16));
             //((TextView) findViewById(R.id.tvClock)).setText(route.duration.text);
-            ((TextView) findViewById(R.id.tvDistance)).setText(route.distance.text);
+            mDistance = route.distance.text;
+            ((TextView) findViewById(R.id.tvDistance)).setText(mDistance);
+
             originMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_icon))
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.start_marker))
                     .title(route.startAddress)
                     .position(route.startLocation)));
+
+            for (LatLng point : mTransitionPoints) {
+                mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.transition_marker))
+                        .title("transit point")
+                        .position(point));
+            }
+
             destinationMarkers.add(mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.finish_icon))
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.finish_marker))
                     .title(route.endAddress)
                     .position(route.endLocation)));
-            PolylineOptions polylineOptions = new PolylineOptions().
+
+            mPolylineOptions = new PolylineOptions().
                     geodesic(true).
-                    color(Color.BLUE).
+                    color(Color.RED).
                     width(10);
             for (int i = 0; i < route.points.size(); i++)
-                polylineOptions.add(route.points.get(i));
-            polylinePaths.add(mMap.addPolyline(polylineOptions));
+                mPolylineOptions.add(route.points.get(i));
+            polylinePaths.add(mMap.addPolyline(mPolylineOptions));
         }
     }
 }
