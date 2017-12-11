@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:background="@raw/background_custom"
+    style="?android:listSeparatorTextViewStyle">
+
+    <TextView
+        android:layout_marginLeft="4dp"
+        android:layout_width="20dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/position"/>
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/image_id"/>
+
+    <TextView
+        android:layout_marginLeft="4dp"
+        android:layout_width="195dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/team_name"/>
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/played_matches"/>
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/win_games"/>
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/draw_games"/>
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/loss_games"/>
+
+    <TextView
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/goal_scored_and_missed_goals"/>
+
+    <TextView
+        android:layout_marginRight="4dp"
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:id="@+id/points"/>
+
+    <LinearLayout
+        android:layout_marginRight="4dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchDay1"/>
+        <ImageView
+            android:layout_marginLeft="4dp"
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchDay2"/>
+        <ImageView
+            android:layout_marginLeft="4dp"
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchDay3"/>
+        <ImageView
+            android:layout_marginLeft="4dp"
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchDay4"/>
+        <ImageView
+            android:layout_marginLeft="4dp"
+            android:layout_gravity="center"
+            android:layout_width="20dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/matchDay5"/>
+    </LinearLayout>
+</LinearLayout>

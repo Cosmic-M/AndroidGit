@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="@raw/background_custom">
+
+    <LinearLayout
+        android:layout_marginLeft="2dp"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="15dp"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:textSize="12sp"
+            android:text="@string/team_position"/>
+
+        <TextView
+            android:layout_width="165dp"
+            android:layout_height="wrap_content"
+            android:paddingLeft="25dp"
+            android:textSize="12sp"
+            android:text="@string/team_caption"/>
+
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/match_played"/>
+
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/match_win"/>
+
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/match_draw"/>
+
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/match_loss"/>
+
+        <TextView
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/gf_ga"/>
+
+        <TextView
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="12sp"
+            android:text="@string/points"/>
+    </LinearLayout>
+
+    <ProgressBar
+        android:layout_gravity="center_vertical"
+        android:visibility="gone"
+        android:id="@+id/progressBar"
+        android:minHeight="20dip"
+        android:maxHeight="20dip"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        style="@android:style/Widget.ProgressBar.Inverse"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/fragment_league_table_recycler_view_id"/>
+
+</LinearLayout>
