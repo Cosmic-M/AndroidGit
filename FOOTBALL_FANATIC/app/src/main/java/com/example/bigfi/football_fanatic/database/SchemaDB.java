@@ -53,8 +53,10 @@ public class SchemaDB {
             public static final String MATCH_DAY = "matchDay";
             public static final String HOME_TEAM_NAME = "homeTeamName";
             public static final String HOME_TEAM_ID = "homeTeamId";
+            public static final String HOME_TEAM_URL = "homeTeamUrl";
             public static final String AWAY_TEAM_NAME = "awayTeamName";
             public static final String AWAY_TEAM_ID = "awayTeamId";
+            public static final String AWAY_TEAM_URL = "awayTeamUrl";
             public static final String STATUS = "status";
             public static final String GOALS_HOME_TEAM = "goalsHomeTeam";
             public static final String GOALS_AWAY_TEAM = "goalsAwayTeam";

@@ -1,5 +1,8 @@
 package com.example.bigfi.football_fanatic.pojo_model;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -9,39 +12,17 @@ import com.google.gson.annotations.SerializedName;
 
 public class Standing {
 
-    @SerializedName("position")
-    @Expose
-    private Integer position;
-    @SerializedName(value = "teamName", alternate = "team")
-    @Expose
+    private int position;
     private String teamName;
-    @SerializedName("playedGames")
-    @Expose
-    private Integer playedGames;
-    @SerializedName("wins")
-    @Expose
-    private int wins; // only countryChamp
-    @SerializedName("draws")
-    @Expose
-    private int draws; // only countryChamp
-    @SerializedName("losses")
-    @Expose
-    private int losses; // only countryChamp
-    @SerializedName("crestURI")
-    @Expose
+    private int playedGames;
+    private int wins;
+    private int draws;
+    private int losses;
     private String crestURI;
-    @SerializedName("points")
-    @Expose
-    private Integer points;
-    @SerializedName("goals")
-    @Expose
-    private Integer goals;
-    @SerializedName("goalsAgainst")
-    @Expose
-    private Integer goalsAgainst;
-    @SerializedName("goalDifference")
-    @Expose
-    private Integer goalDifference;
+    private int points;
+    private int goals;
+    private int goalsAgainst;
+    private int goalDifference;
 
     private int preResult;
     private int pre2Result;
@@ -49,23 +30,14 @@ public class Standing {
     private int pre4Result;
     private int pre5Result;
 
-    @SerializedName("group")
-    @Expose
     private String group; // only ChampionsLeague
-    @SerializedName("teamId")
-    @Expose
-    private Integer teamId; // only ChampionsLeague
+    private int teamId; // only ChampionsLeague
 
-
-    public Integer getPosition() {
+    public int getPosition(){
         return position;
     }
 
     public void setPosition(int position){
-        this.points = position;
-    }
-
-    public void setRank(Integer rank) {
         this.position = position;
     }
 
@@ -81,15 +53,15 @@ public class Standing {
         return teamId;
     }
 
-    public void setTeamId(Integer teamId) {
+    public void setTeamId(int teamId) {
         this.teamId = teamId;
     }
 
-    public Integer getPlayedGames() {
+    public int getPlayedGames() {
         return playedGames;
     }
 
-    public void setPlayedGames(Integer playedGames) {
+    public void setPlayedGames(int playedGames) {
         this.playedGames = playedGames;
     }
 
@@ -98,7 +70,7 @@ public class Standing {
     }
 
     public void setWins(int winGames) {
-        this.wins = wins;
+        this.wins = winGames;
     }
 
     public int getDraws() {
@@ -114,7 +86,7 @@ public class Standing {
     }
 
     public void setLosses(int lossGames) {
-        this.losses = losses;
+        this.losses = lossGames;
     }
 
     public String getCrestURI() {
@@ -125,15 +97,15 @@ public class Standing {
         this.crestURI = crestURI;
     }
 
-    public Integer getPoints() {
+    public int getPoints() {
         return points;
     }
 
-    public void setPoints(Integer points) {
+    public void setPoints(int points) {
         this.points = points;
     }
 
-    public Integer getGoals() {
+    public int getGoals() {
         return goals;
     }
 
@@ -141,15 +113,15 @@ public class Standing {
         this.goals = goals;
     }
 
-    public Integer getGoalsAgainst() {
+    public int getGoalsAgainst() {
         return goalsAgainst;
     }
 
-    public void setGoalsAgainst(Integer goalsAgainst) {
+    public void setGoalsAgainst(int goalsAgainst) {
         this.goalsAgainst = goalsAgainst;
     }
 
-    public Integer getGoalDifference() {
+    public int getGoalDifference() {
         return goalDifference;
     }
 
@@ -204,4 +176,5 @@ public class Standing {
     public void setGroup(String group) {
         this.group = group;
     }
+
 }

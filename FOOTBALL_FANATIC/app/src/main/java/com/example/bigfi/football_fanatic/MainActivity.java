@@ -14,7 +14,7 @@ public class MainActivity extends AppCompatActivity {
     private FragmentManager mFragmentManager;
 
     protected Fragment createFragment() {
-        return RepresentFragment.newInstance();
+        return FirstFragment.newInstance();
     }
 
     @Override
@@ -45,13 +45,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return super.dispatchKeyEvent(event);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        Fragment fragment = getSupportFragmentManager().findFragmentByTag("leagueStandingFragmentTAG");
-        fragment.onActivityResult(requestCode, resultCode, data);
     }
 
     private void openQuitDialog(){

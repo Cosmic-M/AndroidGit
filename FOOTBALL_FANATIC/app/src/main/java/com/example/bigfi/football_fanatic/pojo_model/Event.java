@@ -30,18 +30,22 @@ public class Event {
     @SerializedName("homeTeamId")
     @Expose
     private Integer homeTeamId;
+    private String homeTeamUrl;
     @SerializedName("awayTeamName")
     @Expose
     private String awayTeamName;
     @SerializedName("awayTeamId")
     @Expose
     private Integer awayTeamId;
+    private String awayTeamUrl;
     @SerializedName("result")
     @Expose
     private Result result;
 
+    public Event(){}
+
     public Event(int id, int competitionId, String date, String status, int matchday, String homeTeamName,
-                  int homeTeamId, String awayTeamName, int awayTeamId, Result result){
+                  int homeTeamId, String homeTeamUrl, String awayTeamName, int awayTeamId, String awayTeamUrl, Result result){
         this.id = id;
         this.competitionId = competitionId;
         this.date = date;
@@ -49,8 +53,10 @@ public class Event {
         this.matchday = matchday;
         this.homeTeamName = homeTeamName;
         this.homeTeamId = homeTeamId;
+        this.homeTeamUrl = homeTeamUrl;
         this.awayTeamName = awayTeamName;
         this.awayTeamId = awayTeamId;
+        this.awayTeamUrl = awayTeamUrl;
         this.result = result;
     }
 
@@ -110,6 +116,14 @@ public class Event {
         this.homeTeamId = homeTeamId;
     }
 
+    public String getHomeTeamUrl() {
+        return homeTeamUrl;
+    }
+
+    public void setHomeTeamUrl(String homeTeamUrl) {
+        this.homeTeamUrl = homeTeamUrl;
+    }
+
     public String getAwayTeamName() {
         return awayTeamName;
     }
@@ -124,6 +138,14 @@ public class Event {
 
     public void setAwayTeamId(Integer awayTeamId) {
         this.awayTeamId = awayTeamId;
+    }
+
+    public String getAwayTeamUrl() {
+        return awayTeamUrl;
+    }
+
+    public void setAwayTeamUrl(String awayTeamUrl) {
+        this.awayTeamUrl = awayTeamUrl;
     }
 
     public Result getResult() {

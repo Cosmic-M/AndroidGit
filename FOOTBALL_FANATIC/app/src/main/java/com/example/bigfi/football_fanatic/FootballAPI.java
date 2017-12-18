@@ -1,13 +1,14 @@
 package com.example.bigfi.football_fanatic;
 
 import com.example.bigfi.football_fanatic.pojo_model.Championship;
-import com.example.bigfi.football_fanatic.pojo_model.Event;
-import com.example.bigfi.football_fanatic.pojo_model.Fixture;
-import com.example.bigfi.football_fanatic.pojo_model.League;
+import com.example.bigfi.football_fanatic.pojo_model.PostModel;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
+import retrofit2.Response;
 import retrofit2.http.GET;
+import retrofit2.http.Path;
 import retrofit2.http.Query;
 import rx.Observable;
 
@@ -16,15 +17,19 @@ import rx.Observable;
  */
 
 public interface FootballAPI {
+    //request using for first fragment
     @GET("/v1/competitions")
     Observable<List<Championship>> getData(@Query("season") int season);
 
+    //request using for second fragment
     @GET("/v1/competitions/{leagueId}/leagueTable")
-    Observable<League> getLeague(@Query("leagueId") int league);
+    Observable<Response<ResponseBody>> getLeague(@Path("leagueId") int league);
 
+    //request using for second fragment
     @GET("/v1/competitions/{leagueId}/fixtures")
-    Observable<List<Event>> getEvents(@Query("leagueId") int league);
+    Observable<PostModel> getEvents(@Path("leagueId") int league);
 
-    @GET("/v1/fixtures/{eventId}")
-    Observable<List<Fixture>> getEventsForCoupleTeams(@Query("eventId") int eventId);
+    //request using for fourth fragment
+    @GET("/v1/fixtures/{matchId}")
+    Observable<Response<ResponseBody>> getEventsForCoupleTeams(@Path("matchId") int matchId);
 }

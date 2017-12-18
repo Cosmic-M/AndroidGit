@@ -17,7 +17,9 @@ import com.example.bigfi.football_fanatic.pojo_model.League;
 import com.example.bigfi.football_fanatic.pojo_model.Standing;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -61,6 +63,7 @@ public class Singleton {
             Cursor cursor = mDataBase.query(LeagueTable.NAME, null, LeagueTable.Cols.CAPTION + " =? ",
                     new String[]{listOfChampionships.get(i).getCaption()}, null, null, null);
             if (cursor.getCount() == 0){
+                Log.i(TAG, "cursor.getCount() = " + cursor.getCount());
                 mDataBase.insert(LeagueTable.NAME, null, values[i]);
             }
             cursor.close();
@@ -177,6 +180,23 @@ public class Singleton {
         }
     }
 
+    public List<Championship> getChampionships(){
+        List<Championship> championships = new ArrayList<>();
+        FootballCursorWrapper footballCursorWrapper = getCursor(LeagueTable.NAME, null, null);
+        try{
+            footballCursorWrapper.moveToFirst();
+            while (!footballCursorWrapper.isAfterLast()){
+                Championship  championship = footballCursorWrapper.getChampionship();
+                championships.add(championship);
+                footballCursorWrapper.moveToNext();
+            }
+        }
+        finally {
+            footballCursorWrapper.close();
+        }
+        return championships;
+    }
+
     public League getTeamsStandingMap(String clause, String[] arg) {
         boolean flag = true;
         League league = null;
@@ -220,5 +240,33 @@ public class Singleton {
             footballCursorWrapper.close();
         }
         return eventList;
+    }
+
+    public List<Event> getEventsByCompetitionAndTeam(int competitionId, String teamName){
+        String competitionIdAsString = String.valueOf(competitionId);
+        List<Event> events = new ArrayList<>();
+
+        String croossTables = "EventTable.NAME AS events INNER JOIN TeamStandingTable.NAME AS standings_home "
+                + "INNER JOIN TeamStandingTable.NAME AS standings_away "
+                + "ON events.HOME_TEAM_ID = standings_home.TEAM_ID "
+                + "AND events.AWAY_TEAM_ID = standings_away.TEAM_ID";
+        String seletion = "(events.COMPETITION_ID =? AND standings_home.TEAM_NAME =?) OR "
+                + "(events.COMPETITION_ID =? AND standings_away.TEAM_NAME =?)";
+        String selectionArgs[] = {competitionIdAsString, teamName, competitionIdAsString, teamName};
+
+        FootballCursorWrapper footballCursorWrapper = getCursor(croossTables, seletion, selectionArgs);
+
+        try {
+            footballCursorWrapper.moveToFirst();
+            while (!footballCursorWrapper.isAfterLast()){
+                Event event = footballCursorWrapper.getEvent();
+                events.add(event);
+                footballCursorWrapper.moveToNext();
+            }
+        }
+        finally {
+            footballCursorWrapper.close();
+        }
+        return events;
     }
 }

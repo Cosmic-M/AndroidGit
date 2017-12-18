@@ -15,6 +15,8 @@ public class Result {
     @Expose
     private Integer goalsAwayTeam;
 
+    public Result(){}
+
     public Result(int goalsHomeTeam, int goalsAwayTeam){
         this.goalsHomeTeam = goalsHomeTeam;
         this.goalsAwayTeam = goalsAwayTeam;

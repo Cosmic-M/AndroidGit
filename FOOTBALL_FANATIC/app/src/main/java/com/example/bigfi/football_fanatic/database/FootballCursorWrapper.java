@@ -49,7 +49,6 @@ public class FootballCursorWrapper extends CursorWrapper {
         int pre5Result = getInt(getColumnIndex(SchemaDB.TeamStandingTable.Cols.InnerCols.PRE5_RESULT));
         String group = getString(getColumnIndex(SchemaDB.TeamStandingTable.Cols.InnerCols.GROUP));
 
-        standing.setRank(rank);
         standing.setTeamName(team);
         standing.setTeamId(teamId);
         standing.setPlayedGames(playedGames);
@@ -87,13 +86,16 @@ public class FootballCursorWrapper extends CursorWrapper {
         int matchDay = getInt(getColumnIndex(SchemaDB.EventTable.Cols.MATCH_DAY));
         String homeTeamName = getString(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_NAME));
         int homeTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_ID));
+        String homeTeamURL = getString(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_URL));
         String awayTeamName = getString(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_NAME));
         int awayTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_ID));
+        String awayTeamURL = getString(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_URL));
         String status = getString(getColumnIndex(SchemaDB.EventTable.Cols.STATUS));
         int goalsHomeTeam = getInt(getColumnIndex(SchemaDB.EventTable.Cols.GOALS_HOME_TEAM));
         int goalsAwayTeam = getInt(getColumnIndex(SchemaDB.EventTable.Cols.GOALS_AWAY_TEAM));
         Result result = new Result(goalsHomeTeam, goalsAwayTeam);
-        Event event = new Event(matchId, competitionId, date, status, matchDay, homeTeamName, homeTeamId, awayTeamName, awayTeamId, result);
+        Event event = new Event(matchId, competitionId, date, status, matchDay, homeTeamName,
+                homeTeamId, homeTeamURL, awayTeamName, awayTeamId, awayTeamURL, result);
         return event;
     }
 }
