@@ -1,14 +1,10 @@
 package com.example.bigfi.football_fanatic;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.PictureDrawable;
-import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.os.Bundle;
-import android.app.FragmentManager;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.util.Log;
@@ -17,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.Glide;
@@ -33,8 +28,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import static android.content.Context.CONNECTIVITY_SERVICE;
-
 /**
  * Created by bigfi on 06.12.2017.
  */
@@ -46,13 +39,13 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
     private GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> mRequestBuilder;
 
     public void setData(Activity activity, List<Event> events, GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> requestBuilder) {
+        Log.d(TAG, "setData() called");
         this.mRequestBuilder = requestBuilder;
         this.mActivity = activity;
-        this.mEvents.clear();
-        this.mEvents.addAll(events);
-        notifyDataSetChanged();
-        Log.d(TAG, "setyData() called");
+        mEvents.clear();
+        mEvents.addAll(events);
         Log.d(TAG, "events.size() => " + events.size());
+        notifyDataSetChanged();
     }
 
     @Override
@@ -117,7 +110,7 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
             }
 
             awayTeamUrl = event.getAwayTeamUrl();
-            uri = Uri.parse( homeTeamUrl);
+            uri = Uri.parse( awayTeamUrl);
             if (homeTeamUrl.endsWith(".svg")) {
                 showIfSVG(uri, mAwayTeamImage);
             }
@@ -140,8 +133,8 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
             } catch (java.text.ParseException e) {
                 e.printStackTrace();
             }
-            if (event.getResult().getGoalsHomeTeam().equals("null")
-                    || event.getResult().getGoalsAwayTeam().equals("null")) {
+            if (event.getResult().getGoalsHomeTeam() == -1
+                    || event.getResult().getGoalsAwayTeam() == -1) {
                 mScore.setText(timeOfMatch);
             } else {
                 mScore.setText(event.getResult().getGoalsHomeTeam() + " : " + event.getResult().getGoalsAwayTeam());
@@ -150,30 +143,13 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
             mId = event.getId();
         }
 
-        private boolean isNetworkAvailableAndConnected() {
-            ConnectivityManager cm = (ConnectivityManager) mActivity.getSystemService(CONNECTIVITY_SERVICE);
-            boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
-            boolean isNetworkConnected = isNetworkAvailable && cm.getActiveNetworkInfo().isConnected();
-            return isNetworkConnected;
-        }
 
         @Override
         public void onClick(View view) {
-            if (!isNetworkAvailableAndConnected()) {
-                Toast.makeText(mActivity, "WITHOUT CONNECTION TO NETWORK", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Fragment fragment = new FourthFragment().newInstance();
-            Bundle bundle = new Bundle();
-            bundle.putInt("eventId", mId);
-            bundle.putString("homeTeamUrl", homeTeamUrl);
-            bundle.putString("awayTeamUrl", awayTeamUrl);
-            bundle.putString("homeTeamName", mHomeTeamName.getText().toString());
-            bundle.putString("awayTeamName", mAwayTeamName.getText().toString());
-            fragment.setArguments(bundle);
-            FragmentManager fragmentManager = mActivity.getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.fragment_container, fragment)
-                    .addToBackStack("").commit();
+
+            Intent intent = FourthActivity.newInstance(mActivity, mId, homeTeamUrl, awayTeamUrl,
+                    mHomeTeamName.getText().toString(), mAwayTeamName.getText().toString());
+            mActivity.startActivity(intent);
         }
 
         private void showIfSVG(Uri uri, ImageView view){

@@ -83,6 +83,19 @@ public class Singleton {
         return new FootballCursorWrapper(cursor);
     }
 
+    private FootballCursorWrapper getCursor(String name, String[] columns, String whereClause, String...args){
+        Cursor cursor = mDataBase.query(
+                name,
+                columns,
+                whereClause,
+                args,
+                null,
+                null,
+                null
+        );
+        return new FootballCursorWrapper(cursor);
+    }
+
     private static ContentValues getContentValuesOfStanding(Standing standing, String leagueCaption, int matchDay) {
         ContentValues values = new ContentValues();
         values.put(TeamStandingTable.Cols.LEAGUE_CAPTION, leagueCaption);
@@ -109,7 +122,7 @@ public class Singleton {
     }
 
     public void updateAndInsertTeamStanding(League league){
-        long countUpdateRow;
+        int countUpdateRow;
         long _ID;
         String leagueCaption = league.getLeagueCaption();
         int matchDay = league.getMatchday();
@@ -121,10 +134,10 @@ public class Singleton {
                     TeamStandingTable.Cols.LEAGUE_CAPTION + " =? and " +
                             TeamStandingTable.Cols.InnerCols.TEAM_NAME + " =? ",
                     new String[]{leagueCaption, standing.getTeamName()});
-            Log.i(TAG, "update " + countUpdateRow + " row: TEAM_ID = " + standing.getTeamId());
+            Log.i(TAG, "update " + countUpdateRow + " row: TEAM_ID = " + standing.getTeamId() + " TEAM_NAME = " + standing.getTeamName());
             if (countUpdateRow == 0){
                 _ID = mDataBase.insert(TeamStandingTable.NAME, null, contentValues);
-                Log.i(TAG, "insert Row: ID = " + _ID + " : TEAM_ID = " +  standing.getTeamId());
+                Log.i(TAG, "insert Row: ID = " + _ID + " : TEAM_ID = " +  standing.getTeamId() + " TEAM_NAME = " + standing.getTeamName());
             }
             else if (countUpdateRow > 1){
                 Log.i(TAG, "ERROR: countUpdateRow = " + countUpdateRow);
@@ -134,45 +147,52 @@ public class Singleton {
 
     private ContentValues getContentValuesOfEvent(Event event){
         ContentValues values = new ContentValues();
-        values.put(EventTable.Cols.MATCH_ID, event.getId());
         values.put(EventTable.Cols.COMPETITION_ID, event.getCompetitionId());
+        values.put(EventTable.Cols.MATCH_ID, event.getId());
+        values.put(EventTable.Cols.HOME_TEAM_ID, event.getHomeTeamId());
+        values.put(EventTable.Cols.AWAY_TEAM_ID, event.getAwayTeamId());
         values.put(EventTable.Cols.DATE, event.getDate());
+        values.put(EventTable.Cols.STATUS, event.getStatus());
         values.put(EventTable.Cols.MATCH_DAY, event.getMatchday());
         values.put(EventTable.Cols.HOME_TEAM_NAME, event.getHomeTeamName());
-        values.put(EventTable.Cols.HOME_TEAM_ID, event.getHomeTeamId());
         values.put(EventTable.Cols.AWAY_TEAM_NAME, event.getAwayTeamName());
-        values.put(EventTable.Cols.AWAY_TEAM_ID, event.getAwayTeamId());
-        values.put(EventTable.Cols.STATUS, event.getStatus());
         values.put(EventTable.Cols.GOALS_HOME_TEAM, event.getResult().getGoalsHomeTeam());
         values.put(EventTable.Cols.GOALS_AWAY_TEAM, event.getResult().getGoalsAwayTeam());
         return values;
     }
 
-    public void updateAndInsertEvents(List<Event> eventsList) {
-        Log.i(TAG, "table " + EventTable.NAME + " START UPDATING...");
-        String competitionId = String.valueOf(eventsList.get(0).getCompetitionId());
-        Cursor cursor = mDataBase.query(EventTable.NAME, null, EventTable.Cols.COMPETITION_ID + " =? ", new String[]{competitionId}, null, null, null);
+    public void updateAndInsertEvents(List<Event> events) {
+        Log.i(TAG, "table " + EventTable.NAME + " START INSERT_OR_UPDATE...");
+        int competitionId = events.get(0).getCompetitionId();
+        Log.i(TAG, "COMPETITION_ID before request to DB = " + competitionId);
+
+        Cursor cursor = mDataBase.query(EventTable.NAME, null, EventTable.Cols.COMPETITION_ID + " = ? ", new String[]{Integer.toString(competitionId)}, null, null, null);
+
+        Log.i(TAG, "CURSOR.getCOUNT() = " + cursor.getCount());
+
         try {
             if (cursor.getCount() == 0) {
                 long start = System.currentTimeMillis();
-                for (int i = 0; i < eventsList.size(); i++) {
-                    mDataBase.insert(EventTable.NAME, null, getContentValuesOfEvent(eventsList.get(i)));
-                    Log.i(TAG, "insert element in " + EventTable.NAME);
+                for (int i = 0; i < events.size(); i++) {
+                    long insertRorCount = mDataBase.insert(EventTable.NAME, null, getContentValuesOfEvent(events.get(i)));
+                    Log.i(TAG, "insert " + insertRorCount + " element in " + EventTable.NAME);
                 }
                 long end = System.currentTimeMillis();
-                Log.i(TAG, "insert " + eventsList.size() + " rows for " + (end - start) + " ms");
+                Log.i(TAG, "insert " + events.size() + " rows for " + (end - start) + " ms");
             }
             else {
                 cursor.moveToFirst();
                 int i = 0;
+                long start = System.currentTimeMillis();
                 while (!cursor.isAfterLast()) {
-                    int row = mDataBase.update(EventTable.NAME, getContentValuesOfEvent(eventsList.get(i)),
-                            EventTable.Cols.MATCH_ID + " =? ", new String[]{String.valueOf(eventsList.get(i).getId())});
+                    int row = mDataBase.update(EventTable.NAME, getContentValuesOfEvent(events.get(i)),
+                            EventTable.Cols.MATCH_ID + " =? ", new String[]{Integer.toString(events.get(i).getMatchId())});
                     Log.i(TAG, "update " + row + " row successfully");
                     i++;
                     cursor.moveToNext();
                 }
-                Log.i(TAG, "update " + eventsList.size() + " rows");
+                long end = System.currentTimeMillis();
+                Log.i(TAG, "update " + events.size() + " rows for " + (end - start) + " ms");
             }
         }
         finally {
@@ -242,24 +262,29 @@ public class Singleton {
         return eventList;
     }
 
-    public List<Event> getEventsByCompetitionAndTeam(int competitionId, String teamName){
-        String competitionIdAsString = String.valueOf(competitionId);
+    public List<Event> getEventsByCompetitionAndTeam(int competitionId, int teamId){
+        Log.i(TAG, "getEventsByCompetitionAndTeam started");
         List<Event> events = new ArrayList<>();
 
-        String croossTables = "EventTable.NAME AS events INNER JOIN TeamStandingTable.NAME AS standings_home "
-                + "INNER JOIN TeamStandingTable.NAME AS standings_away "
-                + "ON events.HOME_TEAM_ID = standings_home.TEAM_ID "
-                + "AND events.AWAY_TEAM_ID = standings_away.TEAM_ID";
-        String seletion = "(events.COMPETITION_ID =? AND standings_home.TEAM_NAME =?) OR "
-                + "(events.COMPETITION_ID =? AND standings_away.TEAM_NAME =?)";
-        String selectionArgs[] = {competitionIdAsString, teamName, competitionIdAsString, teamName};
+        String crossTables = "eventTable AS events INNER JOIN teamStandingTable AS standings_home "
+                + "INNER JOIN teamStandingTable AS standings_away "
+                + "ON events.homeTeamId = standings_home.teamId "
+                + "AND events.awayTeamId = standings_away.teamId";
+        String columns[] = { "events.*, standings_home.resourceOfPicture, standings_away.resourceOfPicture" };
+        String selection = "(events.competitionId = ? AND standings_home.teamId = ?) OR "
+                + "(events.competitionId = ? AND standings_away.teamId = ?)";
+        String selectionArgs[] = {Integer.toString(competitionId), Integer.toString(teamId), Integer.toString(competitionId), Integer.toString(teamId)};
 
-        FootballCursorWrapper footballCursorWrapper = getCursor(croossTables, seletion, selectionArgs);
-
+        FootballCursorWrapper footballCursorWrapper = getCursor(crossTables, columns, selection, selectionArgs);
+        Log.i(TAG, "footballCursorWrapper.getCount() = " + footballCursorWrapper.getCount());
+        Log.i(TAG, "footballCursorWrapper.getColumnCount() = " + footballCursorWrapper.getColumnCount());
+        //ERROR: Couldn't read row 0, col -1 from CursorWindow.  Make sure the Cursor is initialized correctly before accessing data from it.
+        Log.i(TAG, "before try...");
         try {
             footballCursorWrapper.moveToFirst();
             while (!footballCursorWrapper.isAfterLast()){
                 Event event = footballCursorWrapper.getEvent();
+                Log.i(TAG, "obtained event!");
                 events.add(event);
                 footballCursorWrapper.moveToNext();
             }
@@ -267,6 +292,7 @@ public class Singleton {
         finally {
             footballCursorWrapper.close();
         }
+        Log.i(TAG, "events.size() = " + events.size());
         return events;
     }
 }

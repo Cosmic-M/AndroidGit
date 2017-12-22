@@ -81,6 +81,6 @@
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/fragment_league_table_recycler_view_id"/>
+        android:id="@+id/activity_league_table_recycler_view_id"/>
 
 </LinearLayout>

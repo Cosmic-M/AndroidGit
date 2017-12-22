@@ -14,7 +14,8 @@ public class Event {
     private Integer id;
     @SerializedName("competitionId")
     @Expose
-    private Integer competitionId;
+    private int competitionId;
+    private int matchId;
     @SerializedName("date")
     @Expose
     private String date;
@@ -60,6 +61,20 @@ public class Event {
         this.result = result;
     }
 
+    public Event(int competitionId, int matchId, int homeTeamId,  int awayTeamId, String date, String status, int matchday,
+                 String homeTeamName, String awayTeamName, Result result){
+        this.competitionId = competitionId;
+        this.matchId = matchId;
+        this.homeTeamId = homeTeamId;
+        this.awayTeamId = awayTeamId;
+        this.date = date;
+        this.status = status;
+        this.matchday = matchday;
+        this.homeTeamName = homeTeamName;
+        this.awayTeamName = awayTeamName;
+        this.result = result;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -68,11 +83,19 @@ public class Event {
         this.id = id;
     }
 
-    public Integer getCompetitionId() {
+    public int getMatchId() {
+        return matchId;
+    }
+
+    public void setMatchId(int matchId) {
+        this.matchId = matchId;
+    }
+
+    public int getCompetitionId() {
         return competitionId;
     }
 
-    public void setCompetitionId(Integer competitionId) {
+    public void setCompetitionId(int competitionId) {
         this.competitionId = competitionId;
     }
 
@@ -136,7 +159,7 @@ public class Event {
         return awayTeamId;
     }
 
-    public void setAwayTeamId(Integer awayTeamId) {
+    public void setAwayTeamId(int awayTeamId) {
         this.awayTeamId = awayTeamId;
     }
 

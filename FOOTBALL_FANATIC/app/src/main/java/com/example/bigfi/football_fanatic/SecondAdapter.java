@@ -1,12 +1,10 @@
 package com.example.bigfi.football_fanatic;
 
 import android.app.Activity;;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.util.Log;
@@ -133,6 +131,7 @@ public class SecondAdapter extends Adapter<ViewHolder> {
         private ImageView preThreeMatchDay;
         private ImageView preFourMatchDay;
         private ImageView preFiveMatchDay;
+        private int teamId;
 
         TeamStandingHolder(View itemView) {
             super(itemView);
@@ -157,6 +156,7 @@ public class SecondAdapter extends Adapter<ViewHolder> {
         }
 
         public void bindItem(Standing item) {
+            teamId = item.getTeamId();
             mTeamName.setText(item.getTeamName());
             mPosition.setText(String.valueOf(item.getPosition()));
             mPlayedGames.setText(String.valueOf(item.getPlayedGames()));
@@ -206,15 +206,10 @@ public class SecondAdapter extends Adapter<ViewHolder> {
         @Override
         public void onClick(View view) {
             Log.i(TAG, "onClick");
-            Fragment fragment = ThirdFragment.newInstance();
-            Bundle bundle = new Bundle();
-            bundle.putString("team_name", mTeamName.getText().toString());
-            bundle.putInt("league_id", mLeagueId);
-            fragment.setArguments(bundle);
-            FragmentManager fragmentManager = mActivity.getFragmentManager();
-            Log.i(TAG, fragment.toString());
-            fragmentManager.beginTransaction().replace(R.id.fragment_container,  fragment)
-                    .addToBackStack("").commit();
+
+            Log.i(FirstAdapter.TAG, "choice league");
+            Intent intent = ThirdActivity.newInstance(mActivity, mLeagueId, teamId);
+            mActivity.startActivity(intent);
         }
 
         private void showIfSVG(Uri uri, ImageView view){

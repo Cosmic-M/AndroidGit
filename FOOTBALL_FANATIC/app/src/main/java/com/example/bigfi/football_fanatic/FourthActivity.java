@@ -1,16 +1,15 @@
 package com.example.bigfi.football_fanatic;
 
 
-import android.app.Fragment;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.Glide;
@@ -43,8 +42,13 @@ import rx.schedulers.Schedulers;
  * Created by bigfi on 06.12.2017.
  */
 
-public class FourthFragment extends Fragment {
-    private static final String TAG = "FourthFragment";
+public class FourthActivity extends AppCompatActivity {
+    private static final String TAG = "FourthActivity";
+    private static final String MATCH_ID = "matchId";
+    private static final String HOME_URL = "homeTeamUrl";
+    private static final String AWAY_URL = "awayTeamUrl";
+    private static final String HOME_TEAM_NAME = "homeTeamName";
+    private static final String AWAY_TEAM_NAME = "awayTeamName";
 
     private RecyclerView mRecyclerView;
     private FourthAdapter mAdapter;
@@ -56,27 +60,42 @@ public class FourthFragment extends Fragment {
 
     Observable<Response<ResponseBody>> observable;
 
-    public static Fragment newInstance() {
-        return new FourthFragment();
+    public static Intent newInstance(Activity activity, int _id, String homeUrl, String awayUrl, String homeName, String awayName){
+        Intent intent = new Intent(activity, FourthActivity.class);
+        intent.putExtra(MATCH_ID, _id);
+        intent.putExtra(HOME_URL, homeUrl);
+        intent.putExtra(AWAY_URL, awayUrl);
+        intent.putExtra(HOME_TEAM_NAME, homeName);
+        intent.putExtra(AWAY_TEAM_NAME, awayName);
+        return intent;
     }
 
     @Override
     public void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
-        setRetainInstance(true);
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            mId = bundle.getInt("eventId");
-            urlMap = new HashMap<>();
-            urlMap.put(bundle.getString("homeTeamName"), bundle.getString("homeTeamUrl"));
-            urlMap.put(bundle.getString("awayTeamName"), bundle.getString("awayTeamUrl"));
-        }
+        setContentView(R.layout.container_rv);
+        Log.i(TAG, "FourthActivity start creating");
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view_id);
+        mRecyclerView.setLayoutManager(new
+                LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+        mAdapter = new FourthAdapter();
+        mRecyclerView.setAdapter(mAdapter);
+
+        mId = getIntent().getIntExtra(MATCH_ID, 0);
+        String homeTeamName = getIntent().getStringExtra(HOME_TEAM_NAME);
+        String awayTeamName = getIntent().getStringExtra(AWAY_TEAM_NAME);
+        String awayUrl = getIntent().getStringExtra(AWAY_URL);
+        String homeUrl = getIntent().getStringExtra(HOME_URL);
+        urlMap = new HashMap<>();
+        urlMap.put(homeTeamName, homeUrl);
+        urlMap.put(awayTeamName, awayUrl);
 
         mEvents = new ArrayList<>();
         mJsonUtils = new JsonUtils();
 
-        mRequestBuilder = Glide.with(getActivity().getApplicationContext())
-                .using(Glide.buildStreamModelLoader(Uri.class, getActivity().getApplicationContext()), InputStream.class)
+        mRequestBuilder = Glide.with(getApplicationContext())
+                .using(Glide.buildStreamModelLoader(Uri.class, getApplicationContext()), InputStream.class)
                 .from(Uri.class)
                 .as(SVG.class)
                 .transcode(new SvgDrawableTranscoder(), PictureDrawable.class)
@@ -96,6 +115,7 @@ public class FourthFragment extends Fragment {
                     @Override
                     public void onCompleted() {
                         Log.i(TAG, "JSON, onCompleted");
+                        mAdapter.setData(FourthActivity.this, mEvents, mRequestBuilder);
                     }
 
                     @Override
@@ -110,7 +130,7 @@ public class FourthFragment extends Fragment {
                             try {
                                 answer = response.body().string();
                                 mEvents.clear();
-                                mEvents = mJsonUtils.parseJsonToEvents(answer);
+                                mEvents = mJsonUtils.parseJsonToEventsForCoupleTeams(answer);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             } catch (JSONException exc) {
@@ -121,21 +141,7 @@ public class FourthFragment extends Fragment {
                             event.setHomeTeamUrl(urlMap.get(event.getHomeTeamName()));
                             event.setAwayTeamUrl(urlMap.get(event.getAwayTeamName()));
                         }
-                        mAdapter.setData(getActivity(), mEvents, mRequestBuilder);
                     }
                 });
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.container_rv, container, false);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recycler_view_id);
-        mRecyclerView.setLayoutManager(new
-                LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-
-        mAdapter = new FourthAdapter();
-        mRecyclerView.setAdapter(mAdapter);
-
-        return view;
     }
 }

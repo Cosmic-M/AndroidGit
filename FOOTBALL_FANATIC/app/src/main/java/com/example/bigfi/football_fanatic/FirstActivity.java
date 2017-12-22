@@ -1,10 +1,13 @@
 package com.example.bigfi.football_fanatic;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,8 +29,8 @@ import rx.schedulers.Schedulers;
  * Created by bigfi on 26.11.2017.
  */
 
-public class FirstFragment extends Fragment {
-    private static final String TAG = "FirstFragment";
+public class FirstActivity extends AppCompatActivity {
+    private static final String TAG = "FirstActivity";
     private List<Championship> mChampionships;
     private RecyclerView mRecyclerView;
     private static final List<String> leagueShortNames = Arrays
@@ -36,13 +39,17 @@ public class FirstFragment extends Fragment {
     private List<Integer> years;
     private FirstAdapter mAdapter;
 
-    public static Fragment newInstance(){
-        return new FirstFragment();
-    }
-
     @Override
     public void onCreate(Bundle saveInstanceState){
         super.onCreate(saveInstanceState);
+        setContentView(R.layout.represent_recycler_view);
+        mRecyclerView = (RecyclerView) findViewById(R.id.represent_list_leagues_recycle_view);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mAdapter = new FirstAdapter();
+        mRecyclerView.setAdapter(mAdapter);
+
         Calendar calendar = Calendar.getInstance();
 
         mChampionships = new ArrayList<>();
@@ -90,8 +97,8 @@ public class FirstFragment extends Fragment {
                         mChampionships.addAll(list);
                         Log.i(TAG, "mChampionShips.size() = " + mChampionships.size());
                         Log.i(TAG, "years.size() = " + years.size());
-                        mAdapter.setData(getActivity(), mChampionships, years);
-                        Singleton.getSingleton(getActivity()).insertListOfChampionship(mChampionships);
+                        mAdapter.setData(FirstActivity.this, mChampionships, years);
+                        Singleton.getSingleton(FirstActivity.this).insertListOfChampionship(mChampionships);
                     }
 
                     @Override
@@ -102,25 +109,42 @@ public class FirstFragment extends Fragment {
                     @Override
                     public void onError(Throwable e) {
                         Log.i(TAG, e.getMessage());
-                        mChampionships = Singleton.getSingleton(getActivity()).getChampionships();
+                        mChampionships = Singleton.getSingleton(FirstActivity.this).getChampionships();
                         //not finished yeat...
                     }
                 });
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_represent_recycler_view, viewGroup, false);
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.KEYCODE_BACK:
+                    openQuitDialog();
+                    return true;
+            }
+        }
+        return super.dispatchKeyEvent(event);
+    }
 
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.represent_list_leagues_recycle_view);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(layoutManager);
+    private void openQuitDialog(){
+        AlertDialog.Builder quitDialog = new AlertDialog.Builder(FirstActivity.this);
+        quitDialog.setTitle(R.string.quit);
 
-        mAdapter = new FirstAdapter();
-        mRecyclerView.setAdapter(mAdapter);
+        quitDialog.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener(){
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which){
+                finish();
+            }
+        });
 
-        Log.i(TAG, "onCreateView() returne view");
+        quitDialog.setNegativeButton(R.string.no, new DialogInterface.OnClickListener(){
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which){
+            }
+        });
 
-        return view;
+        AlertDialog alertDialog = quitDialog.create();
+        alertDialog.show();
     }
 }

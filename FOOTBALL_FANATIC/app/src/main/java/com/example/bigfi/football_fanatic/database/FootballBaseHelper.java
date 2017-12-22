@@ -12,7 +12,7 @@ import com.example.bigfi.football_fanatic.database.SchemaDB.*;
 
 public class FootballBaseHelper extends SQLiteOpenHelper {
     public static final int VERSION = 1;
-    public static final String NAME = "footballDase";
+    public static final String NAME = "footballDataBase";
 
     public FootballBaseHelper(Context context){
         super(context, NAME, null, VERSION);
@@ -34,7 +34,7 @@ public class FootballBaseHelper extends SQLiteOpenHelper {
                 TeamStandingTable.Cols.MATCH_DAY + ", " +
                 TeamStandingTable.Cols.InnerCols.TEAM_NAME + ", " +
                 TeamStandingTable.Cols.InnerCols.POSITION + ", " +
-                TeamStandingTable.Cols.InnerCols.TEAM_ID + ", " +
+                TeamStandingTable.Cols.InnerCols.TEAM_ID + " INTEGER, " +
                 TeamStandingTable.Cols.InnerCols.PLAYED_GAMES + ", " +
                 TeamStandingTable.Cols.InnerCols.WINS + ", " +
                 TeamStandingTable.Cols.InnerCols.DRAWS + ", " +
@@ -54,17 +54,17 @@ public class FootballBaseHelper extends SQLiteOpenHelper {
         );
         db.execSQL("create table " + EventTable.NAME + "(" +
                 "_id integer primary key autoincrement, " +
-                EventTable.Cols.MATCH_ID + ", " +
-                EventTable.Cols.COMPETITION_ID+ ", " +
+                EventTable.Cols.MATCH_ID + " INTEGER, " +
+                EventTable.Cols.COMPETITION_ID + " INTEGER, " +
                 EventTable.Cols.DATE + ", " +
-                EventTable.Cols.MATCH_DAY + ", " +
+                EventTable.Cols.MATCH_DAY + " INTEGER, " +
                 EventTable.Cols.HOME_TEAM_NAME + ", " +
-                EventTable.Cols.HOME_TEAM_ID + ", " +
+                EventTable.Cols.HOME_TEAM_ID + " INTEGER, " +
                 EventTable.Cols.AWAY_TEAM_NAME + ", " +
-                EventTable.Cols.AWAY_TEAM_ID + ", " +
+                EventTable.Cols.AWAY_TEAM_ID + " INTEGER, " +
                 EventTable.Cols.STATUS + ", " +
-                EventTable.Cols.GOALS_HOME_TEAM + ", " +
-                EventTable.Cols.GOALS_AWAY_TEAM +
+                EventTable.Cols.GOALS_HOME_TEAM + " INTEGER, " +
+                EventTable.Cols.GOALS_AWAY_TEAM + " INTEGER" +
                 ")"
         );
     }

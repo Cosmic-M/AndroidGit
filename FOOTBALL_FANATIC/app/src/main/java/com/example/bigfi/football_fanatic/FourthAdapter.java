@@ -22,6 +22,7 @@ package com.example.bigfi.football_fanatic;
         import java.io.InputStream;
         import java.text.DateFormat;
         import java.text.SimpleDateFormat;
+        import java.util.ArrayList;
         import java.util.Date;
         import java.util.List;
         import java.util.TimeZone;
@@ -33,16 +34,16 @@ package com.example.bigfi.football_fanatic;
 public class FourthAdapter extends Adapter<ViewHolder> {
     private static final String TAG = "FourthAdapter";
     private Activity mActivity;
-    private List<Event> mEvents;
+    private List<Event> mEvents = new ArrayList<>();
     private GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> mRequestBuilder;
 
     public void setData(Activity activity, List<Event> events, GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> requestBuilder) {
+        Log.d(TAG, "setData() called");
         this.mActivity = activity;
-        events.clear();
-        events.addAll(events);
+        this.mEvents.clear();
+        this.mEvents.addAll(events);
         this.mRequestBuilder = requestBuilder;
         notifyDataSetChanged();
-        Log.d(TAG, "setyData() called");
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.example.bigfi.football_fanatic.pojo_model;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ public class League {
     private Integer matchday;
     @SerializedName(value = "standing", alternate = "standings")
     @Expose
-    private List<Standing> standing = null;
+    private List<Standing> standing = new ArrayList<>();
 
     public League(){
     }

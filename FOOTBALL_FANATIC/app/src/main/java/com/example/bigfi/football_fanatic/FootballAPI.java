@@ -1,7 +1,6 @@
 package com.example.bigfi.football_fanatic;
 
 import com.example.bigfi.football_fanatic.pojo_model.Championship;
-import com.example.bigfi.football_fanatic.pojo_model.PostModel;
 
 import java.util.List;
 
@@ -27,7 +26,7 @@ public interface FootballAPI {
 
     //request using for second fragment
     @GET("/v1/competitions/{leagueId}/fixtures")
-    Observable<PostModel> getEvents(@Path("leagueId") int league);
+    Observable<Response<ResponseBody>> getEvents(@Path("leagueId") int league);
 
     //request using for fourth fragment
     @GET("/v1/fixtures/{matchId}")

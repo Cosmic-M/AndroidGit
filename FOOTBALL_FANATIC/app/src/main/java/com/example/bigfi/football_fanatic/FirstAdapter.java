@@ -1,9 +1,7 @@
 package com.example.bigfi.football_fanatic;
 
 import android.app.Activity;
-import android.app.FragmentManager;
-import android.net.ConnectivityManager;
-import android.os.Bundle;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.util.Log;
@@ -13,14 +11,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.bigfi.football_fanatic.pojo_model.Championship;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static android.content.Context.CONNECTIVITY_SERVICE;
 
 /**
  * Created by bigfi on 24.11.2017.
@@ -141,28 +136,11 @@ public class FirstAdapter extends Adapter<ViewHolder> {
             }
         }
 
-        private boolean isNetworkAvailableAndConnected(){
-            ConnectivityManager cm = (ConnectivityManager) mActivity.getSystemService(CONNECTIVITY_SERVICE);
-            boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
-            boolean isNetworkConnected = isNetworkAvailable && cm.getActiveNetworkInfo().isConnected();
-            return isNetworkConnected;
-        }
-
         @Override
         public void onClick(View view) {
-            if (!isNetworkAvailableAndConnected()){
-                Toast.makeText(mActivity, "WITHOUT CONNECTION TO NETWORK", Toast.LENGTH_SHORT).show();
-                return;
-            }
             Log.i(FirstAdapter.TAG, "choice league");
-            SecondFragment secondFragment = SecondFragment.newInstance();
-            Bundle bundle = new Bundle();
-            bundle.putInt("id", championship.getId());
-            secondFragment.setArguments(bundle);
-            FragmentManager fragmentManager = mActivity.getFragmentManager();
-            fragmentManager.beginTransaction().replace(R.id.fragment_container, secondFragment)
-                    .addToBackStack("").commit();
-
+            Intent intent = SecondActivity.newInstance(mActivity, championship.getId());
+            mActivity.startActivity(intent);
         }
     }
 

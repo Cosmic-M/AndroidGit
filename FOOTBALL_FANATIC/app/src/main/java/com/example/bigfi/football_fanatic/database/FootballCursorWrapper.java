@@ -2,6 +2,7 @@ package com.example.bigfi.football_fanatic.database;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.util.Log;
 
 import com.example.bigfi.football_fanatic.pojo_model.Championship;
 import com.example.bigfi.football_fanatic.pojo_model.Event;
@@ -15,6 +16,7 @@ import com.example.bigfi.football_fanatic.pojo_model.Standing;
  */
 
 public class FootballCursorWrapper extends CursorWrapper {
+    private static final String TAG = "FootballCursorWrapper";
 
     public FootballCursorWrapper(Cursor cursor){
         super(cursor);
@@ -80,22 +82,41 @@ public class FootballCursorWrapper extends CursorWrapper {
     }
 
     public Event getEvent(){
+        Log.i(TAG, "getEvent() started");
         int matchId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.MATCH_ID));
+        Log.i(TAG, "matchId = " + matchId);
         int competitionId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.COMPETITION_ID));
+        Log.i(TAG, "competitionId = " +  competitionId);
         String date = getString(getColumnIndex(SchemaDB.EventTable.Cols.DATE));
+        Log.i(TAG, "date = " + date);
         int matchDay = getInt(getColumnIndex(SchemaDB.EventTable.Cols.MATCH_DAY));
+        Log.i(TAG, "matchDay = " + matchDay);
         String homeTeamName = getString(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_NAME));
+        Log.i(TAG, "homeTeamName = " + homeTeamName);
         int homeTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_ID));
-        String homeTeamURL = getString(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_URL));
+        Log.i(TAG, "homeTeamId = " + homeTeamId);
+        int index = getColumnIndex(SchemaDB.TeamStandingTable.Cols.InnerCols.CREST_URI);
+        Log.i(TAG, "index = " + index);
+        String homeTeamURL = getString(index - 1);
+        Log.i(TAG, "homeTeamURL = " + homeTeamURL);
         String awayTeamName = getString(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_NAME));
+        Log.i(TAG, "awayTeamName = " + awayTeamName);
         int awayTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_ID));
-        String awayTeamURL = getString(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_URL));
+        Log.i(TAG, "awayTeamId = " + awayTeamId);
+        Log.i(TAG, "index = " + index);
+        String awayTeamURL = getString(index);
+        Log.i(TAG, "awayTeamURL = " + awayTeamURL);
         String status = getString(getColumnIndex(SchemaDB.EventTable.Cols.STATUS));
+        Log.i(TAG, "status = " + status);
         int goalsHomeTeam = getInt(getColumnIndex(SchemaDB.EventTable.Cols.GOALS_HOME_TEAM));
+        Log.i(TAG, "goalsHomeTeam = " + goalsHomeTeam);
         int goalsAwayTeam = getInt(getColumnIndex(SchemaDB.EventTable.Cols.GOALS_AWAY_TEAM));
+        Log.i(TAG, "goalsAwayTeam = " + goalsAwayTeam);
         Result result = new Result(goalsHomeTeam, goalsAwayTeam);
+        Log.i(TAG, "result obtained");
         Event event = new Event(matchId, competitionId, date, status, matchDay, homeTeamName,
                 homeTeamId, homeTeamURL, awayTeamName, awayTeamId, awayTeamURL, result);
+        Log.i(TAG, "FINISHED!");
         return event;
     }
 }

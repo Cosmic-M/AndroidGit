@@ -1,16 +1,15 @@
 package com.example.bigfi.football_fanatic;
 
 
-import android.app.Fragment;
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.PictureDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.bumptech.glide.GenericRequestBuilder;
 import com.bumptech.glide.Glide;
@@ -19,7 +18,6 @@ import com.bumptech.glide.load.resource.file.FileToStreamDecoder;
 import com.caverock.androidsvg.SVG;
 import com.example.bigfi.football_fanatic.pojo_model.Event;
 import com.example.bigfi.football_fanatic.pojo_model.League;
-import com.example.bigfi.football_fanatic.pojo_model.PostModel;
 import com.example.bigfi.football_fanatic.pojo_model.Standing;
 import com.example.bigfi.football_fanatic.supportsGlide.SvgDecoder;
 import com.example.bigfi.football_fanatic.supportsGlide.SvgDrawableTranscoder;
@@ -30,7 +28,6 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -49,11 +46,12 @@ import rx.schedulers.Schedulers;
  * Created by bigfi on 26.11.2017.
  */
 
-public class SecondFragment extends Fragment {
+public class SecondActivity extends AppCompatActivity {
 
-    private static final String TAG = "SecondFragment";
+    private static final String TAG = "SecondActivity";
+    private static final String CHAMPIONSHIP_ID = "championshipId";
     private ConnectableObservable<List<Standing>> observableStandings;
-    private Observable<PostModel> observableEvents;
+    private Observable<Response<ResponseBody>> observableEvents;
     private int mLeagueId;
     private RecyclerView mRecyclerView;
     private SecondAdapter mAdapter;
@@ -63,26 +61,29 @@ public class SecondFragment extends Fragment {
     private JsonUtils mJasonUtils;
     GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> mRequestBuilder;
 
-    public static SecondFragment newInstance() {
-        return new SecondFragment();
+    public static Intent newInstance(Activity activity, int championshipId){
+        Intent intent = new Intent(activity, SecondActivity.class);
+        intent.putExtra(CHAMPIONSHIP_ID, championshipId);
+        return intent;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.i(TAG, "onCreate called");
-        setRetainInstance(true);
-        Bundle bundle = getArguments();
-        if (bundle != null) {
-            mLeagueId = bundle.getInt("id");
-        }
+        setContentView(R.layout.activity_league_table);
 
-        Log.i(TAG, "mLeagueId = " + mLeagueId);
+        mLeagueId = getIntent().getIntExtra(CHAMPIONSHIP_ID, 0);
+        mRecyclerView = (RecyclerView) findViewById(R.id.activity_league_table_recycler_view_id);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(SecondActivity.this);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mAdapter = new SecondAdapter();
+        mRecyclerView.setAdapter(mAdapter);
+
         mJasonUtils = new JsonUtils();
         mEvents = new ArrayList<>();
 
-        mRequestBuilder = Glide.with(getActivity().getApplicationContext())
-                .using(Glide.buildStreamModelLoader(Uri.class, getActivity().getApplicationContext()), InputStream.class)
+        mRequestBuilder = Glide.with(getApplicationContext())
+                .using(Glide.buildStreamModelLoader(Uri.class, getApplicationContext()), InputStream.class)
                 .from(Uri.class)
                 .as(SVG.class)
                 .transcode(new SvgDrawableTranscoder(), PictureDrawable.class)
@@ -141,7 +142,7 @@ public class SecondFragment extends Fragment {
             @Override
             public void onCompleted() {
                 Log.i(TAG, "onCompleted");
-                Singleton.getSingleton(getActivity()).updateAndInsertTeamStanding(mLeague);
+                //Singleton.getSingleton(SecondActivity.this).updateAndInsertTeamStanding(mLeague);
             }
 
             @Override
@@ -157,15 +158,15 @@ public class SecondFragment extends Fragment {
                 Log.i(TAG, "isChampionsLeague = " + isChampionsLeague);
                 Log.i(TAG, "mLeagueId = " + mLeagueId);
                 Collections.sort(standings, new ChampionshipComparator());
-                mAdapter.setData(getActivity(), standings, isChampionsLeague, mLeagueId, mRequestBuilder);
-                Singleton.getSingleton(getActivity()).updateAndInsertTeamStanding(mLeague);
+                mAdapter.setData(SecondActivity.this, standings, isChampionsLeague, mLeagueId, mRequestBuilder);
+                Singleton.getSingleton(SecondActivity.this).updateAndInsertTeamStanding(mLeague);
             }
         };
 
         observableEvents
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<PostModel>() {
+                .subscribe(new Observer<Response<ResponseBody>>() {
                     @Override
                     public void onCompleted() {
                         Log.i(TAG, "onCompleted");
@@ -173,10 +174,23 @@ public class SecondFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNext(PostModel postModel) {
-                        mEvents = postModel.getEvents();
+                    public void onNext(Response<ResponseBody> response) {
+                        Log.i(TAG, "onNext started...");
+                        String answer = "";
+                        try {
+                            answer = response.body().string();
+                            Log.i(TAG, "ANSWER = " + answer);
+                            mEvents = mJasonUtils.parseJsonToEvents(answer);
+
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        catch (JSONException exc){
+                            exc.printStackTrace();
+                        }
                         Log.i(TAG, "eventList.size() = " + mEvents.size());
-                        Singleton.getSingleton(getActivity()).updateAndInsertEvents(mEvents);
+                        Singleton.getSingleton(SecondActivity.this).updateAndInsertEvents(mEvents);
                     }
 
                     @Override
@@ -186,21 +200,8 @@ public class SecondFragment extends Fragment {
                 });
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_league_table, container, false);
-
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.fragment_league_table_recycler_view_id);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        mRecyclerView.setLayoutManager(layoutManager);
-        mAdapter = new SecondAdapter();
-        mRecyclerView.setAdapter(mAdapter);
-
-        return view;
-    }
-
     private List<Standing> setPosition(List<Standing> standings){
-        Collections.sort(standings, new GroupStageComparator(getActivity()));
+        Collections.sort(standings, new GroupStageComparator(SecondActivity.this));
         int rank = 1;
         for (Standing standing : standings){
             standing.setPosition((rank % 4 == 0) ? rank = 1 : rank++);
