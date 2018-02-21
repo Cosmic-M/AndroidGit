@@ -19,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.caverock.androidsvg.SVG;
 import com.example.bigfi.football_fanatic.pojo_model.Event;
+import com.squareup.picasso.Picasso;
 
 import java.io.InputStream;
 import java.text.DateFormat;
@@ -74,7 +75,7 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
         private ImageView mAwayTeamImage;
         private TextView mAwayTeamName;
         private TextView mDate;
-        private Integer mId;
+        private Integer matchId;
 
         private String homeTeamUrl;
         private String awayTeamUrl;
@@ -107,15 +108,18 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
             }
             else{
                 showIfPNG(uri, mHomeTeamImage);
+                //showIfPNGByPicasso(uri, mHomeTeamImage);
             }
 
             awayTeamUrl = event.getAwayTeamUrl();
             uri = Uri.parse( awayTeamUrl);
+            Log.d(TAG, homeTeamUrl + " / " + awayTeamUrl);
             if (homeTeamUrl.endsWith(".svg")) {
                 showIfSVG(uri, mAwayTeamImage);
             }
             else{
                 showIfPNG(uri, mAwayTeamImage);
+                //showIfPNGByPicasso(uri, mAwayTeamImage);
             }
 
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss'Z'");
@@ -140,14 +144,15 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
                 mScore.setText(event.getResult().getGoalsHomeTeam() + " : " + event.getResult().getGoalsAwayTeam());
             }
             mDate.setText(dateOfMatch);
-            mId = event.getId();
+            matchId = event.getMatchId();
+            Log.i(TAG, "matchId = " + matchId);
         }
 
 
         @Override
         public void onClick(View view) {
 
-            Intent intent = FourthActivity.newInstance(mActivity, mId, homeTeamUrl, awayTeamUrl,
+            Intent intent = FourthActivity.newInstance(mActivity, matchId, homeTeamUrl, awayTeamUrl,
                     mHomeTeamName.getText().toString(), mAwayTeamName.getText().toString());
             mActivity.startActivity(intent);
         }
@@ -165,5 +170,13 @@ public class ThirdAdapter extends Adapter<ViewHolder> {
                     .load(uri)
                     .into(view);
         }
+
+//        private void showIfPNGByPicasso(Uri uri, ImageView view){
+//            Picasso.with(mActivity)
+//                    .load(uri)
+//                    .placeholder(R.raw.paceholder)
+//                    .error(R.raw.failure)
+//                    .into(view);
+//        }
     }
 }

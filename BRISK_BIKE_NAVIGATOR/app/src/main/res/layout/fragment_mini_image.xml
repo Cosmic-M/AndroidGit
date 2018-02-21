@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/container_for_mini_image_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="5dp">
+
+    <ImageView
+        android:id="@+id/mini_image_id"
+        android:layout_width="108dp"
+        android:layout_height="108dp"
+        android:layout_alignParentBottom="true"
+        android:scaleType="centerCrop"/>
+
+    <ImageView
+        android:id="@+id/btn_remove_point_id"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignTop="@id/mini_image_id"
+        android:layout_toRightOf="@+id/mini_image_id"
+        android:src="@mipmap/cancel_image"/>
+
+    <ImageView
+        android:id="@+id/btn_target_point_id"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_below="@id/btn_remove_point_id"
+        android:layout_toRightOf="@+id/mini_image_id"
+        android:src="@mipmap/finish_flag"/>
+
+    <ImageView
+        android:id="@+id/btn_transit_point_id"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_alignBottom="@id/mini_image_id"
+        android:layout_toRightOf="@+id/mini_image_id"/>
+
+</RelativeLayout>

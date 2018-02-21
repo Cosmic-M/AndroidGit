@@ -84,8 +84,8 @@ public class ThirdActivity extends AppCompatActivity {
                 .sourceEncoder(new StreamEncoder())
                 .cacheDecoder(new FileToStreamDecoder<SVG>(new SvgDecoder()))
                 .decoder(new SvgDecoder())
-                .placeholder(R.drawable.p_holder)
-                .error(R.drawable.error)
+                .placeholder(R.drawable.placeholder_icon)
+                .error(R.drawable.failure)
                 .animate(android.R.anim.fade_in)
                 .listener(new SvgSoftwareLayerSetter<Uri>());
 
@@ -132,6 +132,7 @@ public class ThirdActivity extends AppCompatActivity {
 
             @Override
             public void onNext(List<Event> events) {
+                mEvents.clear();
                 mEvents.addAll(events);
                 Log.i(TAG, "events.size() = " + events.size());
             }

@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">BRISK BIKE NAVIGATOR</string>
+    <string name="title_activity_maps">BIKE NAVIGATOR</string>
+    <string name="request">СБРОСИТЬ МАРКЕРА?</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="remove">REMOVE</string>
+    <string name="remove_point_question">УДАЛИТЬ МЕСТОПОЛОЖЕНИЕ ИЗ БАЗЫ ДАННЫХ?</string>
+    <string name="add_point_question_dialog">При попытке добавления текущего местоположения в БД,
+        %1$s будет удалена как близ лежащая. Хотите продолжить?</string>
+</resources>

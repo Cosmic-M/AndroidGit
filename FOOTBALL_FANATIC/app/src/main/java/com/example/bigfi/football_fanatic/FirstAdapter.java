@@ -139,7 +139,7 @@ public class FirstAdapter extends Adapter<ViewHolder> {
         @Override
         public void onClick(View view) {
             Log.i(FirstAdapter.TAG, "choice league");
-            Intent intent = SecondActivity.newInstance(mActivity, championship.getId());
+            Intent intent = SecondActivity.newInstance(mActivity, championship.getId(), championship.getCaption());
             mActivity.startActivity(intent);
         }
     }

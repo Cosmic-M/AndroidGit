@@ -95,17 +95,34 @@ public class FootballCursorWrapper extends CursorWrapper {
         Log.i(TAG, "homeTeamName = " + homeTeamName);
         int homeTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.HOME_TEAM_ID));
         Log.i(TAG, "homeTeamId = " + homeTeamId);
-        int index = getColumnIndex(SchemaDB.TeamStandingTable.Cols.InnerCols.CREST_URI);
-        Log.i(TAG, "index = " + index);
-        String homeTeamURL = getString(index - 1);
-        Log.i(TAG, "homeTeamURL = " + homeTeamURL);
+        int index = -1;
+        String homeTeamURL;
+        try {
+            index = getColumnIndex(SchemaDB.TeamStandingTable.Cols.InnerCols.CREST_URI);
+            Log.i(TAG, "index = " + index);
+            homeTeamURL = getString(index - 1);
+            Log.i(TAG, "homeTeamURL = " + homeTeamURL);
+        }
+        catch (Exception e){
+            Log.i(TAG, "index = -1");
+            homeTeamURL = "null";
+            Log.i(TAG, "homeTeamURL = " + homeTeamURL);
+        }
         String awayTeamName = getString(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_NAME));
         Log.i(TAG, "awayTeamName = " + awayTeamName);
         int awayTeamId = getInt(getColumnIndex(SchemaDB.EventTable.Cols.AWAY_TEAM_ID));
         Log.i(TAG, "awayTeamId = " + awayTeamId);
-        Log.i(TAG, "index = " + index);
-        String awayTeamURL = getString(index);
-        Log.i(TAG, "awayTeamURL = " + awayTeamURL);
+        String awayTeamURL;
+        try {
+            Log.i(TAG, "index = " + index);
+            awayTeamURL = getString(index);
+            Log.i(TAG, "awayTeamURL = " + awayTeamURL);
+        }
+        catch (Exception e){
+            Log.i(TAG, "index = -1");
+            awayTeamURL = "null";
+            Log.i(TAG, "awayTeamURL = " + awayTeamURL);
+        }
         String status = getString(getColumnIndex(SchemaDB.EventTable.Cols.STATUS));
         Log.i(TAG, "status = " + status);
         int goalsHomeTeam = getInt(getColumnIndex(SchemaDB.EventTable.Cols.GOALS_HOME_TEAM));

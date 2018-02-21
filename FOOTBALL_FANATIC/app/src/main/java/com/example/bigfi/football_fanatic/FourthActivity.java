@@ -83,6 +83,7 @@ public class FourthActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(mAdapter);
 
         mId = getIntent().getIntExtra(MATCH_ID, 0);
+        Log.i(TAG, "mId = " + mId);
         String homeTeamName = getIntent().getStringExtra(HOME_TEAM_NAME);
         String awayTeamName = getIntent().getStringExtra(AWAY_TEAM_NAME);
         String awayUrl = getIntent().getStringExtra(AWAY_URL);
@@ -102,8 +103,8 @@ public class FourthActivity extends AppCompatActivity {
                 .sourceEncoder(new StreamEncoder())
                 .cacheDecoder(new FileToStreamDecoder<SVG>(new SvgDecoder()))
                 .decoder(new SvgDecoder())
-                .placeholder(R.drawable.p_holder)
-                .error(R.drawable.error)
+                .placeholder(R.drawable.placeholder_icon)
+                .error(R.drawable.failure)
                 .animate(android.R.anim.fade_in)
                 .listener(new SvgSoftwareLayerSetter<Uri>());
 
@@ -126,10 +127,12 @@ public class FourthActivity extends AppCompatActivity {
                     @Override
                     public void onNext(Response<ResponseBody> response) {
                         if (response.isSuccessful()) {
+                            Log.i(TAG, "response is successfully");
                             String answer = "";
                             try {
                                 answer = response.body().string();
                                 mEvents.clear();
+                                Log.i(TAG, "ANSWER -> " + answer);
                                 mEvents = mJsonUtils.parseJsonToEventsForCoupleTeams(answer);
                             } catch (IOException e) {
                                 e.printStackTrace();

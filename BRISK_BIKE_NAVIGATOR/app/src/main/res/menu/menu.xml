@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/preview_points_item"
+        android:title="SHOW ALL POINTS"
+        android:icon="@drawable/list_points"
+        android:orderInCategory="10"
+        app:showAsAction="always">
+    </item>
+    <item
+        android:id="@+id/clear_all_appointed_points_item"
+        android:title="CLEAR"
+        android:icon="@drawable/remove_polyline"
+        android:orderInCategory="20"
+        app:showAsAction="always">
+    </item>
+    <item
+        android:id="@+id/new_point_item"
+        android:title="ADD POINT"
+        android:icon="@drawable/add_new_point"
+        android:orderInCategory="30"
+        app:showAsAction="always">
+    </item>
+    </menu>

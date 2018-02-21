@@ -58,10 +58,12 @@ public class Singleton {
     }
 
     public void insertListOfChampionship(List<Championship> listOfChampionships){
+        Log.i(TAG, "insertListOfChampionship started");
         ContentValues[] values = getMassContentValuesListOfLeague(listOfChampionships);
         for (int i = 0; i < listOfChampionships.size(); i++){
-            Cursor cursor = mDataBase.query(LeagueTable.NAME, null, LeagueTable.Cols.CAPTION + " =? ",
+            Cursor cursor = mDataBase.query(LeagueTable.NAME, null, LeagueTable.Cols.CAPTION + " = ? ",
                     new String[]{listOfChampionships.get(i).getCaption()}, null, null, null);
+            Log.i(TAG, "cursor.getCount() = " + cursor.getCount());
             if (cursor.getCount() == 0){
                 Log.i(TAG, "cursor.getCount() = " + cursor.getCount());
                 mDataBase.insert(LeagueTable.NAME, null, values[i]);
@@ -148,7 +150,7 @@ public class Singleton {
     private ContentValues getContentValuesOfEvent(Event event){
         ContentValues values = new ContentValues();
         values.put(EventTable.Cols.COMPETITION_ID, event.getCompetitionId());
-        values.put(EventTable.Cols.MATCH_ID, event.getId());
+        values.put(EventTable.Cols.MATCH_ID, event.getMatchId());
         values.put(EventTable.Cols.HOME_TEAM_ID, event.getHomeTeamId());
         values.put(EventTable.Cols.AWAY_TEAM_ID, event.getAwayTeamId());
         values.put(EventTable.Cols.DATE, event.getDate());
@@ -186,7 +188,8 @@ public class Singleton {
                 long start = System.currentTimeMillis();
                 while (!cursor.isAfterLast()) {
                     int row = mDataBase.update(EventTable.NAME, getContentValuesOfEvent(events.get(i)),
-                            EventTable.Cols.MATCH_ID + " =? ", new String[]{Integer.toString(events.get(i).getMatchId())});
+                            EventTable.Cols.MATCH_ID + " = ? ", new String[]{Integer.toString(events.get(i).getMatchId())});
+                    Log.i(TAG, "MATCH_ID = " + events.get(i).getMatchId());
                     Log.i(TAG, "update " + row + " row successfully");
                     i++;
                     cursor.moveToNext();
@@ -203,6 +206,7 @@ public class Singleton {
     public List<Championship> getChampionships(){
         List<Championship> championships = new ArrayList<>();
         FootballCursorWrapper footballCursorWrapper = getCursor(LeagueTable.NAME, null, null);
+        Log.i(TAG, "cursor.getCount() = " + footballCursorWrapper.getCount());
         try{
             footballCursorWrapper.moveToFirst();
             while (!footballCursorWrapper.isAfterLast()){
@@ -278,13 +282,12 @@ public class Singleton {
         FootballCursorWrapper footballCursorWrapper = getCursor(crossTables, columns, selection, selectionArgs);
         Log.i(TAG, "footballCursorWrapper.getCount() = " + footballCursorWrapper.getCount());
         Log.i(TAG, "footballCursorWrapper.getColumnCount() = " + footballCursorWrapper.getColumnCount());
-        //ERROR: Couldn't read row 0, col -1 from CursorWindow.  Make sure the Cursor is initialized correctly before accessing data from it.
         Log.i(TAG, "before try...");
         try {
             footballCursorWrapper.moveToFirst();
             while (!footballCursorWrapper.isAfterLast()){
                 Event event = footballCursorWrapper.getEvent();
-                Log.i(TAG, "obtained event!");
+                Log.i(TAG, "obtained event! MATCH_ID = " + event.getMatchId());
                 events.add(event);
                 footballCursorWrapper.moveToNext();
             }

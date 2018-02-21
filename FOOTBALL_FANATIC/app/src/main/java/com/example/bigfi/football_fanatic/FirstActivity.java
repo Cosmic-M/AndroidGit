@@ -8,9 +8,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.example.bigfi.football_fanatic.pojo_model.Championship;
 
@@ -55,9 +52,10 @@ public class FirstActivity extends AppCompatActivity {
         mChampionships = new ArrayList<>();
         years = new ArrayList<>();
 
-        Observable<List<Championship>>[] observableArray = new Observable[calendar.get(Calendar.YEAR) - 2015 + 1];
+        //Observable<List<Championship>>[] observableArray = new Observable[calendar.get(Calendar.YEAR) - 2015 + 1];
+        Observable<List<Championship>>[] observableArray = new Observable[1];
 
-        for (int year = 2017, i = 0; year <= calendar.get(Calendar.YEAR); year++, i++){
+        for (int year = 2017, i = 0; year < calendar.get(Calendar.YEAR); year++, i++){ // or (int year = 2017, i = 0; year <= calendar.get(Calendar.YEAR); year++, i++){
             observable = App.getAPI()
                     .getData(year)
                     .subscribeOn(Schedulers.io())
@@ -76,6 +74,7 @@ public class FirstActivity extends AppCompatActivity {
                             return championships;
                         }
                     });
+
             observableArray[i] = observable;
         }
 
@@ -85,6 +84,7 @@ public class FirstActivity extends AppCompatActivity {
                 .subscribe(new Observer<List<Championship>>() {
                     @Override
                     public void onNext(List<Championship> list) {
+                        Singleton.getSingleton(FirstActivity.this).insertListOfChampionship(list);
                         Log.i(TAG, "onNext called");
                         for (Championship c : list) {
                             Log.i(TAG, "list of championships: " + c.getCaption() + " " + c.getLeague());
@@ -97,20 +97,20 @@ public class FirstActivity extends AppCompatActivity {
                         mChampionships.addAll(list);
                         Log.i(TAG, "mChampionShips.size() = " + mChampionships.size());
                         Log.i(TAG, "years.size() = " + years.size());
-                        mAdapter.setData(FirstActivity.this, mChampionships, years);
-                        Singleton.getSingleton(FirstActivity.this).insertListOfChampionship(mChampionships);
                     }
 
                     @Override
                     public void onCompleted() {
                         Log.i(TAG, "all leagues loaded");
+                        mAdapter.setData(FirstActivity.this, mChampionships, years);
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.i(TAG, e.getMessage());
+                        Log.i(TAG, "onERROR: " + e.getMessage());
                         mChampionships = Singleton.getSingleton(FirstActivity.this).getChampionships();
-                        //not finished yeat...
+                        Log.i(TAG, "mChampionships.size() = " +  mChampionships.size());
+                        mAdapter.setData(FirstActivity.this, mChampionships, years);
                     }
                 });
     }

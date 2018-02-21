@@ -25,6 +25,10 @@ public interface FootballAPI {
     Observable<Response<ResponseBody>> getLeague(@Path("leagueId") int league);
 
     //request using for second fragment
+    @GET("/v1/competitions/{leagueId}/leagueTable?matchday=6")
+    Observable<Response<ResponseBody>> getFinalGroupStage(@Path("leagueId") int league);
+
+    //request using for second fragment
     @GET("/v1/competitions/{leagueId}/fixtures")
     Observable<Response<ResponseBody>> getEvents(@Path("leagueId") int league);
 

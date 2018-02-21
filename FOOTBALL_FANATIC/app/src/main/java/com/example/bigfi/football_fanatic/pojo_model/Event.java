@@ -45,9 +45,9 @@ public class Event {
 
     public Event(){}
 
-    public Event(int id, int competitionId, String date, String status, int matchday, String homeTeamName,
+    public Event(int matchId, int competitionId, String date, String status, int matchday, String homeTeamName,
                   int homeTeamId, String homeTeamUrl, String awayTeamName, int awayTeamId, String awayTeamUrl, Result result){
-        this.id = id;
+        this.matchId = matchId;
         this.competitionId = competitionId;
         this.date = date;
         this.status = status;

@@ -23,7 +23,6 @@ public class JsonUtils {
 
     public List<Event> parseJsonToEventsForCoupleTeams(String jsonString) throws JSONException {
         List<Event> events = new ArrayList<>();
-        Log.i(TAG, "parseJsonToEventsForCoupleTeams start! ");
         JSONObject jObject = new JSONObject(jsonString);
         JSONObject jObjectInner = jObject.getJSONObject("head2head");
         JSONArray jArray = jObjectInner.getJSONArray("fixtures");
@@ -31,17 +30,12 @@ public class JsonUtils {
             JSONObject jO = jArray.getJSONObject(i);
             Event event = new Event();
             event.setDate(jO.getString("date"));
-            Log.i(TAG, "DATA: " + jO.getString("date"));
             event.setHomeTeamName(jO.getString("homeTeamName"));
-            Log.i(TAG, "HOME NAME: " + jO.getString("homeTeamName"));
             event.setAwayTeamName(jO.getString("awayTeamName"));
-            Log.i(TAG, "AWAY NAME: " + jO.getString("awayTeamName"));
             JSONObject jObInner = jO.getJSONObject("result");
             Result result = new Result();
             result.setGoalsHomeTeam(jObInner.getInt("goalsHomeTeam"));
-            Log.i(TAG, "GOALS HOME TEAM =  " + jObInner.getInt("goalsHomeTeam"));
             result.setGoalsAwayTeam(jObInner.getInt("goalsAwayTeam"));
-            Log.i(TAG, "GOALS AWAY TEAM =  " + jObInner.getInt("goalsAwayTeam"));
             event.setResult(result);
             events.add(event);
         }
@@ -50,37 +44,28 @@ public class JsonUtils {
 
     public List<Event> parseJsonToEvents(String jsonString) throws JSONException {
         List<Event> events = new ArrayList<>(380);
-
         JSONObject jsonObject = new JSONObject(jsonString);
         JSONObject json = jsonObject.getJSONObject("_links");
         String link = json.getString("competition");
-        Log.i(TAG, "_id = " + link);
         int slash = link.lastIndexOf("/");
         int hook = link.lastIndexOf("\"");
-        Log.i(TAG, "ID AS STRING -> " + link.substring(slash + 1, hook));
         int competitionId = Integer.parseInt(link.substring(slash + 1, hook)); // COMPETITION_ID
-        Log.i(TAG, "competitionId = " + competitionId);
         JSONArray jArray = jsonObject.getJSONArray("fixtures");
-        Log.i(TAG, "jArray.size() " + jArray.length());
         for (int i = 0; i < jArray.length(); i++) {
-
             JSONObject jO = jArray.getJSONObject(i);
             json = jO.getJSONObject("_links");
-
-            link = json.getString("competition");
+            JSONObject _json = json.getJSONObject("self");;
+            link = _json.getString("href");
             slash = link.lastIndexOf("/");
-            hook = link.lastIndexOf("\"");
-            Log.i(TAG, "MATCH_ID AS STRING -> " + link.substring(slash + 1, hook));
-            int matchId = Integer.parseInt(link.substring(slash + 1, hook)); // MATCH_ID
+            int end = link.length();
+            int matchId = Integer.parseInt(link.substring(slash + 1, end)); // MATCH_ID
             link = json.getString("homeTeam");
             slash = link.lastIndexOf("/");
             hook = link.lastIndexOf("\"");
-            Log.i(TAG, "HOME_TEAM_ID AS STRING -> " + link.substring(slash + 1, hook));
             int homeTeamId = Integer.parseInt(link.substring(slash + 1, hook)); // HOME_TEAM_ID
             link = json.getString("awayTeam");
             slash = link.lastIndexOf("/");
             hook = link.lastIndexOf("\"");
-            Log.i(TAG, "AWAY_TEAM_ID AS STRING -> " + link.substring(slash + 1, hook));
             int awayTeamId = Integer.parseInt(link.substring(slash + 1, hook)); // AWAY_TEAM_ID
 
 
@@ -97,7 +82,6 @@ public class JsonUtils {
                 goalsAwayTeam = jObInner.getInt("goalsAwayTeam"); // GOALS_AWAY_TEAM
             }
             catch (Exception exc){
-                Log.i(TAG, "EXCEPTION => " + exc.getMessage());
                 goalsHomeTeam = -1;
                 goalsAwayTeam = -1;
             }
@@ -108,15 +92,13 @@ public class JsonUtils {
 
             Event event = new Event(competitionId, matchId, homeTeamId, awayTeamId, data, status, matchday, homeTeamName, awayTeamName, result);
             events.add(event);
-            Log.i(TAG, "events.size() = " + events.size());
-            Log.i(TAG, "i = " + i);
         }
+        Log.i(TAG, "events.size() => " + events.size() + " before return");
         return events;
     }
 
-
-
     public League parseJsonToLeague(String jsonString, List<Event> events) throws JSONException{
+        Log.i(TAG, "jsonString => " + jsonString);
         League league = new League();
         List<Standing> standings = new ArrayList<>();
         JSONObject jObject = new JSONObject(jsonString);
@@ -126,30 +108,36 @@ public class JsonUtils {
         league.setMatchday(matchday);
 
         if(isChampionsLeague(leagueCaption)){
+            Log.i(TAG, "isChampionsLeague - TRUE");
             String[] group = new String[]{"A", "B", "C", "D", "E", "F", "G", "H"};
             JSONObject jsonObject = jObject.getJSONObject("standings");
             for (int i = 0; i < group.length; i++) {
                 JSONArray jsonArray = jsonObject.getJSONArray(group[i]);
                 for (int j = 0; j < jsonArray.length(); j++){
+                    Log.i(TAG, "count = " + j);
                     Standing standing = new Standing();
 
                     JSONObject jO = jsonArray.getJSONObject(j);
 
-                    int teamId = jO.getInt("teamId");
+                    int teamId = jO.getInt("teamId"); // TEAM_ID
+                    Log.i(TAG, "teamId = " + teamId);
                     standing.setGroup(group[i]);
                     standing.setTeamName(jO.getString("team"));
                     standing.setCrestURI(jO.getString("crestURI"));
+                    Log.i(TAG, "CREST_URI = " + jO.getString("crestURI"));
                     standing.setTeamId(teamId);
                     standing.setPoints(jO.getInt("points"));
                     standing.setGoals(jO.getInt("goals"));
                     standing.setGoalsAgainst(jO.getInt("goalsAgainst"));
                     standing.setGoalDifference(jO.getInt("goalDifference"));
+                    Log.i(TAG, "goalDifference = " + jO.getInt("goalDifference"));
 
                     int wins = 0;
                     int draws = 0;
                     int losses = 0;
 
                     for (Event event : events){
+                        if (event.getMatchday() > 6) continue;
                         if (event.getHomeTeamId() == teamId){
                             if(event.getResult().getGoalsHomeTeam() > event.getResult().getGoalsAwayTeam()){
                                 wins++;
@@ -208,6 +196,9 @@ public class JsonUtils {
             }
         }
         league.setStanding(standings);
+        Log.i(TAG, "SIZE OF STANDINGS = " + league.getStanding().size());
+        Log.i(TAG, "LEAGUE CAPTION = " + league.getLeagueCaption());
+        Log.i(TAG, "MATCHDAY = " + league.getMatchday());
         return league;
     }
 

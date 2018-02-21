@@ -83,16 +83,17 @@ public class SecondAdapter extends Adapter<ViewHolder> {
         switch (this.getItemViewType(position)) {
             case 0:
                 GroupNameHolder groupName = (GroupNameHolder) holder;
-                int groupItem = position / 5;
-                groupName.bindItem(group[groupItem]);
+                //int groupItem = position / 5;
+                String groupPosition = mStandings.get(position).getGroup();
+                groupName.bindItem(groupPosition);
                 break;
             case 1:
                 TeamStandingHolder teamStandingHolder = (TeamStandingHolder) holder;
 
                 Standing standing = mStandings.get(position);
-                if (isChampionsLeague) {
-                    standing.setPosition(position % 5);
-                }
+//                if (isChampionsLeague) {
+//                    standing.setPosition(position % 5);
+//                }
                 teamStandingHolder.bindItem(standing);
                 break;
         }
@@ -165,15 +166,6 @@ public class SecondAdapter extends Adapter<ViewHolder> {
             mDrawGames.setText(Integer.toString(item.getDraws()));
             mLossGames.setText(Integer.toString(item.getLosses()));
 
-            String url = item.getCrestURI();
-            Uri uri = Uri.parse(url);
-            if (url.endsWith(".svg")) {
-                showIfSVG(uri, mEmblem);
-            }
-            else{
-                showIfPNG(uri, mEmblem);
-            }
-
             mGoalScoredAndMissedGoals.setText(item
                     .getGoals() + "-" + item.getGoalsAgainst());
 
@@ -200,6 +192,17 @@ public class SecondAdapter extends Adapter<ViewHolder> {
                         images[i].setVisibility(View.GONE);
                         break;
                 }
+            }
+            if (item.getCrestURI() == null){
+                return;
+            }
+            String url = item.getCrestURI();
+            Uri uri = Uri.parse(url);
+            if (url.endsWith(".svg")) {
+                showIfSVG(uri, mEmblem);
+            }
+            else{
+                showIfPNG(uri, mEmblem);
             }
         }
 

@@ -50,9 +50,13 @@ public class SecondActivity extends AppCompatActivity {
 
     private static final String TAG = "SecondActivity";
     private static final String CHAMPIONSHIP_ID = "championshipId";
+    private static final String CAPTION = "caption";
+    private static String[] group = new String[]{"A", "B", "C", "D", "E", "F", "G", "H"};
     private ConnectableObservable<List<Standing>> observableStandings;
+    private ConnectableObservable<List<Standing>> observableFinalGroupStage;
     private Observable<Response<ResponseBody>> observableEvents;
     private int mLeagueId;
+    private String mCaption;
     private RecyclerView mRecyclerView;
     private SecondAdapter mAdapter;
     private boolean isChampionsLeague;
@@ -61,18 +65,24 @@ public class SecondActivity extends AppCompatActivity {
     private JsonUtils mJasonUtils;
     GenericRequestBuilder<Uri, InputStream, SVG, PictureDrawable> mRequestBuilder;
 
-    public static Intent newInstance(Activity activity, int championshipId){
+    public static Intent newInstance(Activity activity, int championshipId, String caption){
         Intent intent = new Intent(activity, SecondActivity.class);
         intent.putExtra(CHAMPIONSHIP_ID, championshipId);
+        intent.putExtra(CAPTION, caption);
         return intent;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_league_table);
 
         mLeagueId = getIntent().getIntExtra(CHAMPIONSHIP_ID, 0);
+        mCaption = getIntent().getStringExtra(CAPTION);
+
+        int index = mCaption.indexOf("20");
+        isChampionsLeague = mCaption.substring(0, index).trim().equals("Champions League");
+
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_league_table_recycler_view_id);
         LinearLayoutManager layoutManager = new LinearLayoutManager(SecondActivity.this);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -90,8 +100,8 @@ public class SecondActivity extends AppCompatActivity {
                 .sourceEncoder(new StreamEncoder())
                 .cacheDecoder(new FileToStreamDecoder<SVG>(new SvgDecoder()))
                 .decoder(new SvgDecoder())
-                .placeholder(R.drawable.p_holder)
-                .error(R.drawable.error)
+                .placeholder(R.drawable.placeholder_icon)
+                .error(R.drawable.failure)
                 .animate(android.R.anim.fade_in)
                 .listener(new SvgSoftwareLayerSetter<Uri>());
 
@@ -104,20 +114,18 @@ public class SecondActivity extends AppCompatActivity {
                 String answer = "";
                 try {
                     answer = response.body().string();
-                    Log.i(TAG, "ANSWER = " + answer);
+                    Log.i(TAG, "ANSWER AS STANDINGS => " + answer);
                     league = mJasonUtils.parseJsonToLeague(answer, mEvents);
 
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    Log.i(TAG, "IO_EXCEPTION: " + e.getMessage());
                 }
                 catch (JSONException exc){
-                    exc.printStackTrace();
+                    Log.i(TAG, "JSON_EXCEPTION: " + exc.getMessage());
                 }
 
                 mLeague = league;
-                int index = league.getLeagueCaption().indexOf("20");
-                isChampionsLeague = league.getLeagueCaption().substring(0, index).trim().equals("Champions League");
 
                 List<Standing> standings = league.getStanding();
                 if (isChampionsLeague) {
@@ -127,14 +135,25 @@ public class SecondActivity extends AppCompatActivity {
             }
         };
 
-        observableStandings = App.getAPI().getLeague(mLeagueId)
-                .subscribeOn(Schedulers.io())
-                .subscribeOn(Schedulers.computation())
-                .map(assignLastResult)
-                .observeOn(AndroidSchedulers.mainThread())
-                .replay();
+        if (isChampionsLeague){
+            observableFinalGroupStage = App.getAPI().getFinalGroupStage(mLeagueId)
+                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(Schedulers.computation())
+                    .map(assignLastResult)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .replay();
+            observableFinalGroupStage.connect();
+        }
 
-        observableStandings.connect();
+        else {
+            observableStandings = App.getAPI().getLeague(mLeagueId)
+                    .subscribeOn(Schedulers.io())
+                    .subscribeOn(Schedulers.computation())
+                    .map(assignLastResult)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .replay();
+            observableStandings.connect();
+        }
 
         observableEvents = App.getAPI().getEvents(mLeagueId);
 
@@ -152,12 +171,35 @@ public class SecondActivity extends AppCompatActivity {
 
             @Override
             public void onNext(List<Standing> standings) {
+                Log.i(TAG, "standings obtained!");
                 mLeague.getStanding().clear();
                 mLeague.setStanding(standings);
                 Log.i(TAG, "STANDINGS.size() = " + standings.size());
-                Log.i(TAG, "isChampionsLeague = " + isChampionsLeague);
-                Log.i(TAG, "mLeagueId = " + mLeagueId);
-                Collections.sort(standings, new ChampionshipComparator());
+                /*
+                collection of groups have need to add to standings's list
+                 */
+                if (isChampionsLeague) {
+                    List<Standing> groups = new ArrayList<>();
+                    for (int i = 0; i < group.length; i++) {
+                        Standing standing = new Standing();
+                        standing.setGroup(group[i]);
+                        standing.setPoints(19);
+                        groups.add(standing);
+                    }
+                    standings.addAll(groups);
+                    Collections.sort(standings, new GroupStageComparator(SecondActivity.this));
+
+                    for (int i = 0; i < standings.size(); i++) {
+                        if ((i % 5) != 0) {
+                            standings.get(i).setPosition((i % 5));
+                        }
+                    }
+                }
+                else{
+                    Collections.sort(standings, new ChampionshipComparator());
+                }
+
+                Log.i(TAG, "result.size() = " + standings.size());
                 mAdapter.setData(SecondActivity.this, standings, isChampionsLeague, mLeagueId, mRequestBuilder);
                 Singleton.getSingleton(SecondActivity.this).updateAndInsertTeamStanding(mLeague);
             }
@@ -170,7 +212,12 @@ public class SecondActivity extends AppCompatActivity {
                     @Override
                     public void onCompleted() {
                         Log.i(TAG, "onCompleted");
-                        observableStandings.subscribe(observer);
+                        if (isChampionsLeague){
+                            observableFinalGroupStage.subscribe(observer);
+                        }
+                        else{
+                            observableStandings.subscribe(observer);
+                        }
                     }
 
                     @Override
@@ -209,7 +256,7 @@ public class SecondActivity extends AppCompatActivity {
         return standings;
     }
 
-    private List<Standing> fetchFiveLastResults(List<Standing> standings, List<Event> events, int matchDay) {
+    private List<Standing> fetchFiveLastResults(List<Standing> standings, List<Event> events, int currentMatchDay) {
         Event event;
         int dayOfMatch;
         Standing homeStanding;
@@ -224,17 +271,11 @@ public class SecondActivity extends AppCompatActivity {
         for (int i = 0; i < events.size(); i++) {
             event = events.get(i);
             dayOfMatch = event.getMatchday();
-            if (event.getStatus().equals("FINISHED") && (dayOfMatch > matchDay - 5)
-                    && (dayOfMatch <= matchDay)) {
+            if (event.getStatus().equals("FINISHED") && (dayOfMatch >= currentMatchDay - 5)
+                    && (dayOfMatch < currentMatchDay)) {
                 homeStanding = mapStandings.get(event.getHomeTeamName());
                 awayStanding = mapStandings.get(event.getAwayTeamName());
-                switch (matchDay - dayOfMatch) {
-                    case 0: {
-                        res = assignPreviousResultForHomeTeam(event);
-                        homeStanding.setPreResult(res[0]);
-                        awayStanding.setPreResult(res[1]);
-                        break;
-                    }
+                switch (currentMatchDay - dayOfMatch) {
                     case 1: {
                         res = assignPreviousResultForHomeTeam(event);
                         homeStanding.setPreResult(res[0]);
@@ -243,20 +284,26 @@ public class SecondActivity extends AppCompatActivity {
                     }
                     case 2: {
                         res = assignPreviousResultForHomeTeam(event);
-                        homeStanding.setPreResult(res[0]);
-                        awayStanding.setPreResult(res[1]);
+                        homeStanding.setPre2Result(res[0]);
+                        awayStanding.setPre2Result(res[1]);
                         break;
                     }
                     case 3: {
                         res = assignPreviousResultForHomeTeam(event);
-                        homeStanding.setPreResult(res[0]);
-                        awayStanding.setPreResult(res[1]);
+                        homeStanding.setPre3Result(res[0]);
+                        awayStanding.setPre3Result(res[1]);
                         break;
                     }
                     case 4: {
                         res = assignPreviousResultForHomeTeam(event);
-                        homeStanding.setPreResult(res[0]);
-                        awayStanding.setPreResult(res[1]);
+                        homeStanding.setPre4Result(res[0]);
+                        awayStanding.setPre4Result(res[1]);
+                        break;
+                    }
+                    case 5: {
+                        res = assignPreviousResultForHomeTeam(event);
+                        homeStanding.setPre5Result(res[0]);
+                        awayStanding.setPre5Result(res[1]);
                         break;
                     }
                 }
